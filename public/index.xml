@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>My New Hugo Site</title>
+    <link>https://milodowling.github.io/</link>
+    <description>Recent content on My New Hugo Site</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 20 Aug 2024 04:33:28 -0700</lastBuildDate><atom:link href="https://milodowling.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>My First Post</title>
+      <link>https://milodowling.github.io/posts/my-first-post/</link>
+      <pubDate>Tue, 20 Aug 2024 04:33:28 -0700</pubDate>
+      
+      <guid>https://milodowling.github.io/posts/my-first-post/</guid>
+      <description></description>
+      <content></content>
+    </item>
+    
+  </channel>
+</rss>
