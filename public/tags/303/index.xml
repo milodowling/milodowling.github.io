@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Posts on Milo</title>
-    <link>https://milodowling.github.io/posts/</link>
-    <description>Recent content in Posts on Milo</description>
+    <title>303 on Milo</title>
+    <link>https://milodowling.github.io/tags/303/</link>
+    <description>Recent content in 303 on Milo</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Tue, 20 Aug 2024 04:33:28 -0700</lastBuildDate><atom:link href="https://milodowling.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 20 Aug 2024 04:33:28 -0700</lastBuildDate><atom:link href="https://milodowling.github.io/tags/303/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Chris&#39;s x0xb0x</title>
       <link>https://milodowling.github.io/posts/chriss-x0xb0x/</link>
@@ -46,16 +46,6 @@ Opening it up Inside, there were further issues&amp;ndash; some building corrosi
 &lt;li&gt;Clean! Unfortunately, this BA662 and BA661s days are numbered, regardless. We&amp;rsquo;ll burn that bridge when we come to it. It may be too expensive to repair, alas.&lt;/li&gt;
 &lt;/ul&gt;
 </content>
-    </item>
-    
-    <item>
-      <title>My First Post</title>
-      <link>https://milodowling.github.io/posts/my-first-post/</link>
-      <pubDate>Tue, 20 Aug 2024 04:33:28 -0700</pubDate>
-      
-      <guid>https://milodowling.github.io/posts/my-first-post/</guid>
-      <description></description>
-      <content></content>
     </item>
     
   </channel>
