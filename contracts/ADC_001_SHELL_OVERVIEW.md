@@ -211,6 +211,8 @@ not correspond to real regressions. The test is tolerant of Pages-introduced
 gzip/whitespace/line-ending normalization and only fails on substantive content
 divergence.
 
+This will be resolved in a future ADC init pass for the dnd tabletop project. Ensure current implementations and contract artifacts related / specific to this constraint are flagged as they will later be removed.
+
 **Parity:**
 - **Implementation Scope:** Astro static-asset passthrough for `_preserved-dnd-content/dnd-tabletop/` → `/dnd-tabletop/`, configured in `astro.config.mjs` or via a `public/` symlink/copy step
 - **Configuration Scope:** `astro.config.mjs`, build script
