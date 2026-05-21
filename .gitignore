@@ -18,6 +18,10 @@ dist/
 .cache/
 .env
 .env.local
+
+# Test runners (Playwright artifacts; Vitest writes nothing to disk)
+test-results/
+playwright-report/
 # Astro auto-generates this single-line type-reference shim on every build.
 # JavaScript-first project — we don't author TypeScript, but Astro emits the
 # shim regardless. It's tooling-internal and regenerated each build.
