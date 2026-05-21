@@ -11,10 +11,21 @@ adc_files/refinement/
 contracts/*.tmp
 contracts/*.bak
 
-# Node / build (placeholders for the Astro shell to come)
+# Node / build
 node_modules/
 dist/
 .astro/
 .cache/
 .env
 .env.local
+# Astro auto-generates this single-line type-reference shim on every build.
+# JavaScript-first project — we don't author TypeScript, but Astro emits the
+# shim regardless. It's tooling-internal and regenerated each build.
+src/env.d.ts
+
+# DND-PRESERVATION: build-staged copy of the preserved /dnd-tabletop/ tool.
+# The canonical source is _preserved-dnd-content/dnd-tabletop/; the integration
+# in astro.config.mjs copies it into public/dnd-tabletop/ for dev and dist/
+# for build. Don't commit the copy.
+# Remove this entry when the D&D ADC init pass lands.
+public/dnd-tabletop/

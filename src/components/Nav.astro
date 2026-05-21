@@ -1,0 +1,67 @@
+---
+// ADC-IMPLEMENTS: <section-feature-manifest-01>
+//
+// Shell navigation. Reads `src/sections.config.js`, filters to entries with
+// `enabled: true`, and renders a link to `/<slug>/` in declared order with
+// the `label` as visible text. The shell's nav code reads only `slug`,
+// `label`, and `enabled` — additional fields on manifest entries are
+// ignored at the shell layer (sections may carry their own metadata).
+import sections from "../sections.config.js";
+
+const visible = sections.filter((s) => s.enabled);
+const currentPath = Astro.url.pathname;
+---
+
+<nav class="shell-nav" aria-label="Primary">
+  <ul class="shell-nav-list">
+    {
+      visible.map((section) => {
+        const href = `/${section.slug}/`;
+        const isCurrent =
+          currentPath === href || currentPath.startsWith(href);
+        return (
+          <li class="shell-nav-item">
+            <a
+              class="shell-nav-link"
+              href={href}
+              aria-current={isCurrent ? "page" : undefined}
+            >
+              {section.label}
+            </a>
+          </li>
+        );
+      })
+    }
+  </ul>
+</nav>
+
+<style>
+  .shell-nav-list {
+    display: flex;
+    list-style: none;
+    gap: 1.25rem;
+    margin: 0;
+    padding: 0;
+    flex-wrap: wrap;
+  }
+
+  .shell-nav-link {
+    font-family: var(--shell-font-mono);
+    font-size: 0.9rem;
+    text-decoration: none;
+    color: var(--shell-fg-muted);
+    letter-spacing: 0.02em;
+  }
+
+  .shell-nav-link:hover,
+  .shell-nav-link:focus-visible,
+  .shell-nav-link[aria-current="page"] {
+    color: var(--shell-fg);
+  }
+
+  .shell-nav-link[aria-current="page"] {
+    text-decoration: underline;
+    text-decoration-color: var(--shell-accent);
+    text-underline-offset: 0.3em;
+  }
+</style>

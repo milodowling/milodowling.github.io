@@ -1,0 +1,74 @@
+/*
+ * ADC-IMPLEMENTS: <shell-constraint-federation-01>
+ *
+ * Shell baseline: minimal reset + typographic defaults + design tokens, all
+ * namespaced under the `shell-` prefix or scoped via `:where(.shell)` so they
+ * carry zero specificity weight when sections override.
+ *
+ * Sections may opt out of any token by re-declaring it within their own
+ * scoped style. The federation TestScenarios (<shell-test-federation-01>,
+ * <shell-test-federation-cross-section-05>) verify that section styles cannot
+ * leak through this baseline into the shell or into other sections.
+ */
+
+/* Minimal reset (low-specificity via :where) */
+:where(html, body, h1, h2, h3, h4, h5, h6, p, ul, ol, li, figure, blockquote) {
+  margin: 0;
+  padding: 0;
+}
+
+:where(*, *::before, *::after) {
+  box-sizing: border-box;
+}
+
+/* Design tokens — all shell-namespaced */
+:root {
+  --shell-bg: #0a0a0c;
+  --shell-fg: #ececec;
+  --shell-fg-muted: #8a8a90;
+  --shell-accent: #d8ff3a;
+  --shell-rule: #1c1c20;
+  --shell-font-sans:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+  --shell-font-mono:
+    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --shell-measure: 64ch;
+  --shell-gutter: clamp(1rem, 4vw, 2rem);
+}
+
+html {
+  background: var(--shell-bg);
+  color: var(--shell-fg);
+  font-family: var(--shell-font-sans);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ADC-IMPLEMENTS: <shell-constraint-mobile-03>
+ * Baseline guard against horizontal overflow at the 375px-viewport gate.
+ * Per-route layouts must still avoid intrinsic-width content (long lines,
+ * unconstrained images, fixed-width grids); this rule is the safety net, not
+ * the primary mechanism. Phase 4 TestScenario <shell-test-mobile-03> verifies
+ * `scrollWidth <= 375` across every shell route. */
+body {
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+:where(a) {
+  color: inherit;
+  text-decoration-color: var(--shell-fg-muted);
+  text-underline-offset: 0.2em;
+}
+
+:where(a:hover, a:focus-visible) {
+  text-decoration-color: var(--shell-accent);
+}
+
+:where(img, video, canvas) {
+  max-width: 100%;
+  display: block;
+}

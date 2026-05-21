@@ -1,0 +1,72 @@
+---
+// ADC-IMPLEMENTS: <section-feature-routing-02>
+//
+// Shell layout: header (nav) + slot for page content + footer. Sections opt
+// in by importing this layout. Sections that need a different framing chrome
+// (e.g., a future immersive engine demo route) may opt out — the shell does
+// not enforce layout adoption.
+import "../styles/baseline.css";
+import Nav from "../components/Nav.astro";
+
+const { title = "milodowling.com" } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <title>{title}</title>
+  </head>
+  <body class="shell">
+    <header class="shell-header">
+      <a class="shell-wordmark" href="/">milodowling</a>
+      <Nav />
+    </header>
+    <main class="shell-main">
+      <slot />
+    </main>
+    <footer class="shell-footer">
+      <span>&copy; Milo Dowling</span>
+    </footer>
+  </body>
+</html>
+
+<style>
+  /* Scoped to the shell layout — these classes are shell-namespaced
+     (`shell-` prefix) per <shell-constraint-federation-01>. */
+  .shell-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem var(--shell-gutter);
+    border-bottom: 1px solid var(--shell-rule);
+    flex-wrap: wrap;
+  }
+
+  .shell-wordmark {
+    font-family: var(--shell-font-mono);
+    font-size: 1rem;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    color: var(--shell-fg);
+  }
+
+  .shell-wordmark:hover,
+  .shell-wordmark:focus-visible {
+    color: var(--shell-accent);
+  }
+
+  .shell-main {
+    min-height: calc(100vh - 8rem);
+  }
+
+  .shell-footer {
+    padding: 1.5rem var(--shell-gutter);
+    border-top: 1px solid var(--shell-rule);
+    color: var(--shell-fg-muted);
+    font-size: 0.85rem;
+  }
+</style>
