@@ -197,7 +197,7 @@ The placeholder MUST NOT:
   surface, if any, lives on the homepage.
 
 **Parity:**
-- **Implementation Scope:** `src/components/EngineSlot.jsx` (placeholder body), `src/shaders/placeholder.frag.glsl`
+- **Implementation Scope:** `src/components/engine/PlaceholderShader.jsx`
 - **Tests:**
   - See `<home-test-engine-interface-01>` and `<home-test-mobile-degradation-02>`
 
