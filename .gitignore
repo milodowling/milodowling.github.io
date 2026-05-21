@@ -1,0 +1,20 @@
+# macOS
+.DS_Store
+
+# ADC temporary files
+claude_tmp/
+adc_files/refinement/
+
+# ADC configuration / backups
+.adcconfig.json
+*.adc-backup
+contracts/*.tmp
+contracts/*.bak
+
+# Node / build (placeholders for the Astro shell to come)
+node_modules/
+dist/
+.astro/
+.cache/
+.env
+.env.local
