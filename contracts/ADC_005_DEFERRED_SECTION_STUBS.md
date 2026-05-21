@@ -2,7 +2,7 @@
 contract_id: deferred-section-stubs-adc-005
 title: "Deferred Section Stubs — Synth, D&D, Tools"
 author: "Milo Dowling"
-status: "proposed"
+status: "active"
 version: 1.0
 created_date: "2026-05-20"
 last_updated: "2026-05-21"

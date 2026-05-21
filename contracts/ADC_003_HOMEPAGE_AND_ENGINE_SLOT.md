@@ -2,7 +2,7 @@
 contract_id: homepage-engine-slot-adc-003
 title: "Homepage and Engine Slot Interface"
 author: "Milo Dowling"
-status: "proposed"
+status: "active"
 version: 1.0
 created_date: "2026-05-20"
 last_updated: "2026-05-21"

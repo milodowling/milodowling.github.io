@@ -2,7 +2,7 @@
 contract_id: shell-overview-adc-001
 title: "milodowling.com Shell — Overview, Stack, and Cross-Cutting Constraints"
 author: "Milo Dowling"
-status: "proposed"
+status: "active"
 version: 1.0
 created_date: "2026-05-20"
 last_updated: "2026-05-21"

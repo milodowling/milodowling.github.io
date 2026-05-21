@@ -2,7 +2,7 @@
 contract_id: section-manifest-adc-002
 title: "Section Manifest, Filesystem Routing, and Feed Convention"
 author: "Milo Dowling"
-status: "proposed"
+status: "active"
 version: 1.0
 created_date: "2026-05-20"
 last_updated: "2026-05-21"
