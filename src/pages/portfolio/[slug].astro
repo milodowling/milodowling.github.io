@@ -1,0 +1,181 @@
+---
+// ADC-IMPLEMENTS: <portfolio-feature-entry-04>
+//
+// Portfolio entry page at /portfolio/<slug>/. The slug comes from the
+// markdown file's stem under `src/content/portfolio/<slug>.md`. The page
+// renders title, date, media (resolved through the R2 helper), and the
+// markdown body.
+//
+// `getStaticPaths` produces one route per entry in the `portfolio` collection.
+// Astro's content-collection runtime supplies a per-entry `render()` that
+// returns the markdown-compiled `<Content />` component.
+//
+// No `Optional` types: when `media` is absent, the array is undefined and the
+// template simply does not render a media block. No null guards needed beyond
+// the conditional branch, which is template control flow, not a defensive
+// guard.
+import { getCollection } from "astro:content";
+import ShellLayout from "../../layouts/ShellLayout.astro";
+import { resolveMediaRef } from "../../lib/r2.js";
+
+export async function getStaticPaths() {
+  const entries = await getCollection("portfolio");
+  return entries.map((entry) => ({
+    params: { slug: entry.slug },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+
+// ADC-IMPLEMENTS: <portfolio-helper-r2-02>
+// Resolver call site: each `r2:`-prefixed value in `media` is rewritten to a
+// public URL via `resolveMediaRef`. Entries with no `media` produce an empty
+// list and the template omits the media block entirely.
+const mediaUrls = (entry.data.media ?? []).map((ref) => resolveMediaRef(ref));
+
+const isoDate = entry.data.date.toISOString().slice(0, 10);
+---
+
+<ShellLayout title={`${entry.data.title} — milodowling.com`}>
+  <article class="portfolio-entry">
+    <header class="portfolio-entry-head">
+      <p class="portfolio-entry-eyebrow">
+        <a class="portfolio-entry-back" href="/portfolio/">&larr; Portfolio</a>
+      </p>
+      <h1 class="portfolio-entry-title">{entry.data.title}</h1>
+      <time class="portfolio-entry-date" datetime={isoDate}>{isoDate}</time>
+      <p class="portfolio-entry-summary">{entry.data.summary}</p>
+    </header>
+
+    {
+      mediaUrls.length > 0 ? (
+        <ul class="portfolio-entry-media">
+          {mediaUrls.map((url) => (
+            <li class="portfolio-entry-media-item">
+              <img src={url} alt="" loading="lazy" />
+            </li>
+          ))}
+        </ul>
+      ) : null
+    }
+
+    <div class="portfolio-entry-body">
+      <Content />
+    </div>
+  </article>
+</ShellLayout>
+
+<style>
+  /* Scoped to this page by Astro. `portfolio-` is the section namespace; the
+     scoping handles federation per <shell-constraint-federation-01>. */
+
+  .portfolio-entry {
+    padding: clamp(2rem, 5vw, 4rem) var(--shell-gutter);
+    max-width: 56rem;
+    margin: 0 auto;
+  }
+
+  .portfolio-entry-head {
+    margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
+  }
+
+  .portfolio-entry-eyebrow {
+    margin-bottom: 1rem;
+  }
+
+  .portfolio-entry-back {
+    font-family: var(--shell-font-mono);
+    font-size: 0.85rem;
+    color: var(--shell-fg-muted);
+    text-decoration: none;
+  }
+
+  .portfolio-entry-back:hover,
+  .portfolio-entry-back:focus-visible {
+    color: var(--shell-accent);
+  }
+
+  .portfolio-entry-title {
+    font-family: var(--shell-font-mono);
+    font-size: clamp(1.75rem, 6vw, 2.5rem);
+    color: var(--shell-fg);
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+  }
+
+  .portfolio-entry-date {
+    display: block;
+    margin-top: 0.5rem;
+    color: var(--shell-fg-muted);
+    font-size: 0.85rem;
+    font-family: var(--shell-font-mono);
+  }
+
+  .portfolio-entry-summary {
+    margin-top: 1rem;
+    color: var(--shell-fg-muted);
+    font-size: 1rem;
+    line-height: 1.55;
+    max-width: var(--shell-measure);
+  }
+
+  .portfolio-entry-media {
+    list-style: none;
+    display: grid;
+    gap: clamp(0.75rem, 2vw, 1.25rem);
+    margin: 0 0 clamp(1.5rem, 4vw, 2.5rem) 0;
+  }
+
+  .portfolio-entry-media-item img {
+    width: 100%;
+    border-radius: 0.375rem;
+    background: var(--shell-rule);
+  }
+
+  .portfolio-entry-body {
+    color: var(--shell-fg);
+    font-size: 1rem;
+    line-height: 1.65;
+    max-width: var(--shell-measure);
+  }
+
+  /* Scope markdown-emitted descendants. Astro scopes the parent class, and
+     descendants inherit the scope hash automatically. */
+  .portfolio-entry-body :global(h2) {
+    font-family: var(--shell-font-mono);
+    font-size: 1.25rem;
+    color: var(--shell-fg);
+    margin-top: 2rem;
+  }
+
+  .portfolio-entry-body :global(p) {
+    margin-top: 1rem;
+    color: var(--shell-fg);
+  }
+
+  .portfolio-entry-body :global(ul),
+  .portfolio-entry-body :global(ol) {
+    margin-top: 1rem;
+    padding-left: 1.5rem;
+  }
+
+  .portfolio-entry-body :global(li) {
+    margin-top: 0.25rem;
+  }
+
+  .portfolio-entry-body :global(a) {
+    color: var(--shell-fg);
+    text-decoration: underline;
+    text-decoration-color: var(--shell-accent);
+  }
+
+  .portfolio-entry-body :global(code) {
+    font-family: var(--shell-font-mono);
+    font-size: 0.9em;
+    background: var(--shell-rule);
+    padding: 0.1em 0.3em;
+    border-radius: 0.25em;
+  }
+</style>

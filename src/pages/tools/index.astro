@@ -1,0 +1,43 @@
+---
+// ADC-IMPLEMENTS: <stubs-feature-tools-04>
+//
+// Tools section stub at /tools/. Navigable placeholder, shell-layout-framed.
+// The shell does not prescribe whether the eventual tools section uses
+// per-tool routes, a single page with embedded demos, or some other pattern;
+// that decision belongs to the tools ADC pass.
+import ShellLayout from "../../layouts/ShellLayout.astro";
+---
+
+<ShellLayout title="Tools — milodowling.com">
+  <section class="stub">
+    <h1 class="stub-title">Tools</h1>
+    <p class="stub-copy">
+      In development. A collection of small utilities and experiments will
+      land in this section's own ADC pass.
+    </p>
+  </section>
+</ShellLayout>
+
+<style>
+  /* Scoped to this page by Astro; no leakage into shell or other sections. */
+
+  .stub {
+    padding: clamp(3rem, 8vw, 5rem) var(--shell-gutter);
+    max-width: 40rem;
+    margin: 0 auto;
+  }
+
+  .stub-title {
+    font-family: var(--shell-font-mono);
+    font-size: clamp(1.75rem, 6vw, 2.5rem);
+    color: var(--shell-fg);
+    letter-spacing: -0.01em;
+  }
+
+  .stub-copy {
+    margin-top: 1rem;
+    color: var(--shell-fg-muted);
+    font-size: 1rem;
+    line-height: 1.55;
+  }
+</style>

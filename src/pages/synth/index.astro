@@ -1,0 +1,43 @@
+---
+// ADC-IMPLEMENTS: <stubs-feature-synth-01>
+//
+// Synth section stub at /synth/. Navigable placeholder, shell-layout-framed.
+// The shell explicitly does NOT prescribe synth internals (kanban, feed,
+// service notes, aesthetic anchor) — those land in the synth ADC pass.
+import ShellLayout from "../../layouts/ShellLayout.astro";
+---
+
+<ShellLayout title="Synth — milodowling.com">
+  <section class="stub">
+    <h1 class="stub-title">Synth</h1>
+    <p class="stub-copy">
+      In development. The full synth section — projects, instruments, and
+      service notes — lands in its own ADC pass.
+    </p>
+  </section>
+</ShellLayout>
+
+<style>
+  /* Scoped to this page by Astro; no leakage into shell or other sections.
+     The stub deliberately carries no section-specific aesthetic. */
+
+  .stub {
+    padding: clamp(3rem, 8vw, 5rem) var(--shell-gutter);
+    max-width: 40rem;
+    margin: 0 auto;
+  }
+
+  .stub-title {
+    font-family: var(--shell-font-mono);
+    font-size: clamp(1.75rem, 6vw, 2.5rem);
+    color: var(--shell-fg);
+    letter-spacing: -0.01em;
+  }
+
+  .stub-copy {
+    margin-top: 1rem;
+    color: var(--shell-fg-muted);
+    font-size: 1rem;
+    line-height: 1.55;
+  }
+</style>

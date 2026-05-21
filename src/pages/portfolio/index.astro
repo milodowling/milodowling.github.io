@@ -1,0 +1,182 @@
+---
+// ADC-IMPLEMENTS: <portfolio-feature-index-03>
+//
+// Portfolio index page at /portfolio/. Lists every entry in the `portfolio`
+// content collection as a card, ordered by `date` descending with ties broken
+// by `title` ascending (per <portfolio-feature-content-01>).
+//
+// Each card shows: title, summary, and (when the entry frontmatter declares a
+// `thumb`) a thumbnail resolved through the R2 helper. The card links to the
+// entry page at `/portfolio/<slug>/`.
+//
+// No pagination in v1 per <portfolio-feature-index-03>.
+//
+// Federation: all class names shell-namespaced (`portfolio-*` is a section
+// namespace — but these styles are scoped to this Astro file by default, so
+// they cannot leak. The federation constraint is satisfied by Astro scoping,
+// not by class-name discipline alone).
+import { getCollection } from "astro:content";
+import ShellLayout from "../../layouts/ShellLayout.astro";
+import { resolveMediaRef } from "../../lib/r2.js";
+
+const entries = await getCollection("portfolio");
+
+// Order by date descending; ties break by title ascending.
+entries.sort((a, b) => {
+  const dateDelta = b.data.date.getTime() - a.data.date.getTime();
+  if (dateDelta !== 0) return dateDelta;
+  return a.data.title.localeCompare(b.data.title);
+});
+
+// ADC-IMPLEMENTS: <portfolio-helper-r2-02>
+// Resolver call site: every card's `thumb` (when present) is rewritten from
+// "r2:<key>" into a public URL via `resolveMediaRef`, which delegates to the
+// `r2()` helper from `src/lib/r2.js`. Cards without a thumb render
+// title-only per the sensible-default rule in <portfolio-feature-content-01>.
+const cards = entries.map((entry) => ({
+  slug: entry.slug,
+  title: entry.data.title,
+  summary: entry.data.summary,
+  date: entry.data.date,
+  thumbUrl: entry.data.thumb ? resolveMediaRef(entry.data.thumb) : null,
+}));
+
+const isoDate = (d) =>
+  d.toISOString().slice(0, 10); // YYYY-MM-DD
+---
+
+<ShellLayout title="Portfolio — milodowling.com">
+  <section class="portfolio-index">
+    <header class="portfolio-index-head">
+      <h1 class="portfolio-index-title">Portfolio</h1>
+      <p class="portfolio-index-blurb">
+        Selected work — video, software, instruments.
+      </p>
+    </header>
+    {
+      cards.length === 0 ? (
+        <p class="portfolio-index-empty">No entries yet.</p>
+      ) : (
+        <ul class="portfolio-card-list">
+          {cards.map((card) => (
+            <li class="portfolio-card">
+              <a class="portfolio-card-link" href={`/portfolio/${card.slug}/`}>
+                {card.thumbUrl ? (
+                  <img
+                    class="portfolio-card-thumb"
+                    src={card.thumbUrl}
+                    alt=""
+                    loading="lazy"
+                  />
+                ) : null}
+                <div class="portfolio-card-body">
+                  <h2 class="portfolio-card-title">{card.title}</h2>
+                  <time class="portfolio-card-date" datetime={isoDate(card.date)}>
+                    {isoDate(card.date)}
+                  </time>
+                  <p class="portfolio-card-summary">{card.summary}</p>
+                </div>
+              </a>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </section>
+</ShellLayout>
+
+<style>
+  /* Scoped to this page by Astro. Class names use the `portfolio-` section
+     namespace; scoping prevents leakage into the shell or other sections per
+     <shell-constraint-federation-01>. */
+
+  .portfolio-index {
+    padding: clamp(2rem, 5vw, 4rem) var(--shell-gutter);
+    max-width: 80rem;
+    margin: 0 auto;
+  }
+
+  .portfolio-index-head {
+    margin-bottom: clamp(2rem, 5vw, 3rem);
+  }
+
+  .portfolio-index-title {
+    font-family: var(--shell-font-mono);
+    font-size: clamp(1.75rem, 6vw, 2.75rem);
+    letter-spacing: -0.01em;
+    color: var(--shell-fg);
+  }
+
+  .portfolio-index-blurb {
+    margin-top: 0.5rem;
+    color: var(--shell-fg-muted);
+    font-size: 0.95rem;
+    max-width: var(--shell-measure);
+  }
+
+  .portfolio-index-empty {
+    color: var(--shell-fg-muted);
+    font-style: italic;
+  }
+
+  .portfolio-card-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+    gap: clamp(1rem, 3vw, 1.75rem);
+  }
+
+  .portfolio-card {
+    display: block;
+  }
+
+  .portfolio-card-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    border: 1px solid var(--shell-rule);
+    border-radius: 0.5rem;
+    overflow: hidden;
+    background: var(--shell-bg);
+    transition: border-color 120ms ease;
+  }
+
+  .portfolio-card-link:hover,
+  .portfolio-card-link:focus-visible {
+    border-color: var(--shell-accent);
+  }
+
+  .portfolio-card-thumb {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    display: block;
+    background: var(--shell-rule);
+  }
+
+  .portfolio-card-body {
+    padding: 1rem 1.1rem 1.2rem;
+  }
+
+  .portfolio-card-title {
+    font-family: var(--shell-font-mono);
+    font-size: 1.1rem;
+    color: var(--shell-fg);
+    letter-spacing: -0.005em;
+  }
+
+  .portfolio-card-date {
+    display: block;
+    margin-top: 0.25rem;
+    color: var(--shell-fg-muted);
+    font-size: 0.8rem;
+    font-family: var(--shell-font-mono);
+  }
+
+  .portfolio-card-summary {
+    margin-top: 0.6rem;
+    color: var(--shell-fg-muted);
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+</style>
