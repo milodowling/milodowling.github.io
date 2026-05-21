@@ -1,37 +1,16 @@
 ---
-// Phase 1 placeholder homepage. Real hero + engine slot land in Phase 2 per
-// <home-feature-homepage-01>, <home-feature-engine-slot-02>, and
-// <home-impl-placeholder-04> in contracts/ADC_003_HOMEPAGE_AND_ENGINE_SLOT.md.
+// ADC-IMPLEMENTS: <home-feature-homepage-01>
 //
-// This page exists solely to satisfy the Phase 1 roadmap item "Cloudflare
-// Pages build/deploy config such that a static placeholder ships." It will
-// be replaced wholesale in Phase 2.
+// The homepage at `/`. Hero-only per <home-feature-homepage-01>: the engine
+// slot IS the homepage. Site identity overlays the engine canvas; navigation
+// lives in the shell header (provided by ShellLayout).
+//
+// Replaced wholesale from the Phase 1 placeholder. Phase 2 lands the real
+// hero + engine slot per contracts/ADC_003_HOMEPAGE_AND_ENGINE_SLOT.md.
 import ShellLayout from "../layouts/ShellLayout.astro";
+import Hero from "../components/Hero.astro";
 ---
 
-<ShellLayout title="milodowling.com">
-  <section class="phase1-placeholder">
-    <h1>milodowling.com</h1>
-    <p>
-      Shell rebuild in progress. Hero and engine slot land in Phase 2.
-    </p>
-  </section>
+<ShellLayout title="milodowling">
+  <Hero />
 </ShellLayout>
-
-<style>
-  .phase1-placeholder {
-    padding: clamp(2rem, 8vw, 5rem) var(--shell-gutter);
-    max-width: var(--shell-measure);
-  }
-
-  .phase1-placeholder h1 {
-    font-family: var(--shell-font-mono);
-    font-size: clamp(1.5rem, 4vw, 2.5rem);
-    letter-spacing: -0.01em;
-  }
-
-  .phase1-placeholder p {
-    margin-top: 1rem;
-    color: var(--shell-fg-muted);
-  }
-</style>

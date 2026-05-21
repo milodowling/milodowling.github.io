@@ -1,0 +1,126 @@
+---
+// ADC-IMPLEMENTS: <home-feature-homepage-01>
+// ADC-IMPLEMENTS: <home-feature-engine-slot-02>
+//
+// Hero composition for the homepage. Hero IS the homepage per
+// <home-feature-homepage-01>: a full-viewport region occupied by the engine
+// slot (a React island), with site identity overlaid on top using shell-
+// baseline typography.
+//
+// The shell layout's header/nav already sits above this hero (provided by
+// ShellLayout.astro). The hero's job is to fill the remaining viewport with
+// the engine canvas and lay name+tagline over it.
+//
+// Mobile (<shell-constraint-mobile-03>): the hero fills the viewport
+// responsively. The engine canvas degrades fidelity (DPR clamp) inside
+// PlaceholderShader.jsx; the layout itself never causes horizontal scroll.
+//
+// React-island activation: <home-impl-engine-interface-03> requires the slot
+// to be a real React island. We use `client:load` because the engine canvas
+// IS the hero — there's no above-the-fold experience without it, and lazy-
+// hydrating it (e.g., `client:visible`) would mean a blank hero on first
+// paint.
+import EngineSlot from "./EngineSlot.jsx";
+---
+
+<section class="shell-hero" aria-label="milodowling.com">
+  <div class="shell-hero-canvas-mount">
+    <EngineSlot client:load params={{}} />
+  </div>
+  <div class="shell-hero-overlay">
+    <h1 class="shell-hero-name">milodowling</h1>
+    <p class="shell-hero-tagline">video art, synths, weird software</p>
+  </div>
+</section>
+
+<style>
+  /* All classes shell-namespaced per <shell-constraint-federation-01>. */
+
+  .shell-hero {
+    position: relative;
+    width: 100%;
+    /* Hero fills the viewport minus the shell header/footer that
+       ShellLayout draws above/below. The exact subtraction is approximate —
+       header ~5rem, footer ~4rem — and clamps to a sensible mobile minimum.
+       The intent is "the hero dominates first paint." */
+    min-height: clamp(28rem, calc(100vh - 9rem), 60rem);
+    overflow: hidden;
+    background: var(--shell-bg);
+  }
+
+  .shell-hero-canvas-mount {
+    position: absolute;
+    inset: 0;
+    /* The engine slot's root div fills this container; its canvas fills
+       the root div. Pointer events go through to the canvas (the overlay
+       is non-interactive). */
+    z-index: 0;
+  }
+
+  /* The canvas itself is styled inside the slot wrapper. We provide the
+     baseline display rule at the shell layer so the slot doesn't have to
+     fight the baseline.css `img, video, canvas { max-width: 100% }` rule. */
+  :global(.engine-slot-root) {
+    position: absolute;
+    inset: 0;
+  }
+
+  :global(.engine-slot-canvas) {
+    width: 100%;
+    height: 100%;
+    display: block;
+    /* Pointer cursor on hover so it's discoverable that the canvas is
+       interactive. The pointer-tracking proof in the test scenario uses
+       pointer events, not cursor styling. */
+    cursor: crosshair;
+    /* Fallback color shown if WebGL2 init failed (the placeholder adds
+       `engine-slot-canvas--no-webgl` in that case). */
+    background: var(--shell-bg);
+  }
+
+  :global(.engine-slot-canvas--no-webgl) {
+    /* Neutral fallback: subtle diagonal stripes so a no-WebGL device still
+       gets a visual that doesn't look like a broken page. The page itself
+       remains fully functional. */
+    background:
+      repeating-linear-gradient(
+        45deg,
+        var(--shell-bg),
+        var(--shell-bg) 12px,
+        var(--shell-rule) 12px,
+        var(--shell-rule) 13px
+      );
+  }
+
+  .shell-hero-overlay {
+    position: relative;
+    z-index: 1;
+    pointer-events: none; /* let pointer reach the canvas */
+    padding: clamp(2rem, 6vw, 4rem) var(--shell-gutter);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    height: 100%;
+    min-height: inherit;
+  }
+
+  .shell-hero-name {
+    font-family: var(--shell-font-mono);
+    font-size: clamp(2rem, 8vw, 5rem);
+    letter-spacing: -0.02em;
+    line-height: 1;
+    color: var(--shell-fg);
+    /* Subtle dark scrim so the wordmark stays legible over any shader
+       brightness without darkening the whole hero. */
+    text-shadow: 0 2px 24px rgba(0, 0, 0, 0.6);
+  }
+
+  .shell-hero-tagline {
+    margin-top: 0.5rem;
+    font-family: var(--shell-font-mono);
+    font-size: clamp(0.85rem, 2vw, 1rem);
+    letter-spacing: 0.04em;
+    color: var(--shell-fg-muted);
+    text-shadow: 0 2px 16px rgba(0, 0, 0, 0.6);
+  }
+</style>
