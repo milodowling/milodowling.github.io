@@ -4,6 +4,8 @@
 # ADC temporary files
 claude_tmp/
 adc_files/refinement/
+# Phase-5 evaluator output (insights report + route screenshots) — local artifact.
+adc_files/evaluation/
 
 # ADC configuration / backups
 .adcconfig.json
