@@ -28,7 +28,10 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # npm 11 (bundled with Node 24) — must match the npm generation
+          # that writes package-lock.json locally, or `npm ci` rejects the
+          # nested-optional-deps layout (wrangler's bundled esbuild).
+          node-version: 24
           cache: npm
       - run: npm ci
       - run: npm run build
