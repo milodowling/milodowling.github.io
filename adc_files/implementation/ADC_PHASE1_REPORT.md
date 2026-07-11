@@ -94,8 +94,11 @@ ran inline.
 - `adc_files/implementation/DND_PRESERVATION_ARTIFACTS.md` — the load-bearing
   enumeration of every artifact tied to `/dnd-tabletop/` preservation, plus
   the removal procedure for the future D&D ADC init pass. Every flagged
-  artifact carries the grep-able `DND-PRESERVATION: remove when D&D ADC init
-  pass lands` marker.
+  artifact carried a grep-able removal marker. *(Editorial note 2026-07-10:
+  the D&D ADC pass — contracts/ADC_006_DND_TABLETOP.md — executed that
+  removal procedure; the markers, the artifacts doc, and the literal marker
+  string in this report are gone so the post-removal zero-matches grep
+  check holds.)*
 
 ---
 
@@ -148,7 +151,7 @@ Phase 4 (validation) owns the full TestScenario suite per the roadmap. Phase
 | R2 helper throws loudly on empty key                         | PASS    |
 | `grep -n "ADC-IMPLEMENTS:" src/ astro.config.mjs` lists nine markers covering all Phase 1-scope blocks | PASS    |
 | `grep "Optional"` across src — zero hits                     | PASS    |
-| `grep "DND-PRESERVATION"` is grep-able and lists every flagged artifact | PASS    |
+| grep for the dnd preservation marker lists every flagged artifact (literal string elided 2026-07-10 post-removal) | PASS    |
 
 Full TestScenario suite (`<shell-test-federation-01>`,
 `<shell-test-federation-cross-section-05>`, `<shell-test-modularity-02>`,

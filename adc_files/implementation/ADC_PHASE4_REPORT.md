@@ -268,7 +268,7 @@ Phase 3 closed at **25 markers**. Phase 4 adds:
 | `grep -rn 'try {' tests/` returns only paired with `finally` (no catch swallowing assertion failures) | PASS — three try blocks total: two in `engine-slot.e2e.js` (paired with finally for cleanup; no catch) and one in a polling helper (catch ECONNREFUSED while waiting for child server, explicit `throw` on timeout) |
 | `grep -rn 'portfolio-\|synth-\|dnd-\|tools-\|writing-' src/layouts/ src/components/ src/styles/` returns empty | PASS — no section namespace leaked into shell scope |
 | `_preserved-dnd-content/` mtime unchanged | PASS — directory untouched (git status confirms) |
-| DND-PRESERVATION markers intact | PASS — all four markers still present (`astro.config.mjs:19`, `astro.config.mjs:39`, `README.md:126`, `adc_files/implementation/DND_PRESERVATION_ARTIFACTS.md:17`) |
+| dnd preservation markers intact (string elided 2026-07-10 post-removal) | PASS — all four markers still present at Phase 4 time (`astro.config.mjs:19`, `astro.config.mjs:39`, `README.md:126`, `adc_files/implementation/DND_PRESERVATION_ARTIFACTS.md:17`) |
 | No `.github/workflows/` or CI service config added | PASS — none added (per the brief, deployment plumbing is out of scope for this phase) |
 | `_preserved-dnd-content/dnd-tabletop/index.html` byte-identity after build (Phase 3 check) | PASS — preserved file byte-identical to its source; `<shell-test-url-preservation-04>` further verifies content-identity-after-HTTP-decode end-to-end |
 | Every section route renders shell-layout chrome | PASS — verified by `tests/shell/routing.spec.js:70` over all four section routes |
@@ -297,7 +297,7 @@ Phase 3 closed at **25 markers**. Phase 4 adds:
 - **Test infrastructure** is ready for incremental contract expansion. Adding a new TestScenario means dropping a new `tests/<scope>/<name>.spec.js` or `*.e2e.js` and (for static tests) optionally extending `_helpers/`.
 - **Vitest fileParallelism is off.** If future phases add tests that don't mutate `src/`, they can opt into parallelism per-file with `vi.todo`-style annotations — but the cost of serial execution is small and the source-tree-mutation pattern recurs across many of the existing specs.
 - **The engine-slot swap test rebuilds the project mid-suite.** Future engine-pass work that changes the swap surface must update `tests/shell/engine-slot.e2e.js:185-220` (the swap implementation source string) to keep the interface contract honest.
-- **The dnd-tabletop URL preservation test reads `_preserved-dnd-content/` verbatim and compares against the served body after LF normalization.** A future D&D ADC pass that retires the preserved tool will need to retire this test alongside the `DND-PRESERVATION:` markers in the codebase.
+- **The dnd-tabletop URL preservation test reads `_preserved-dnd-content/` verbatim and compares against the served body after LF normalization.** A future D&D ADC pass that retires the preserved tool will need to retire this test alongside the preservation markers in the codebase. *(Done 2026-07-10: the D&D ADC pass — ADC_006 — absorbed the tool, retired the freeze, and rewrote the test as `<dnd-test-url-continuity-01>`.)*
 - **The `writing` synthetic section in the modularity test is fully cleaned up in afterAll.** A future "real writing section" addition would NOT collide; the test reserves no slug.
 
 ---

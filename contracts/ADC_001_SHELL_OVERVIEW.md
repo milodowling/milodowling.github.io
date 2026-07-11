@@ -3,9 +3,9 @@ contract_id: shell-overview-adc-001
 title: "milodowling.com Shell — Overview, Stack, and Cross-Cutting Constraints"
 author: "Milo Dowling"
 status: "active"
-version: 1.0
+version: 1.1
 created_date: "2026-05-20"
-last_updated: "2026-05-21"
+last_updated: "2026-07-10"
 ---
 
 # Shell Overview
@@ -191,33 +191,32 @@ unrecoverable visual artifacts).
 
 ### [Constraint: URL preservation — /dnd-tabletop/ must keep serving] <shell-constraint-url-preservation-04>
 
-The URL `https://milodowling.github.io/dnd-tabletop/` is currently live and has
-been shared with friends. The new build MUST keep `/dnd-tabletop/` serving the
-preserved virtual-tabletop tool. The preserved content lives at
-`_preserved-dnd-content/dnd-tabletop/` in this repo (see
-`_preserved-dnd-content/MANIFEST.md`).
+**Status: SUPERSEDED (2026-07-10) by `<dnd-feature-tool-route-01>` in
+`ADC_006_DND_TABLETOP.md`** — the D&D ADC init pass this constraint
+anticipated. Kept for the record; do not implement against this entry.
 
-The preserved tool is a single-file HTML app. The build must publish it at
-`/dnd-tabletop/index.html` (and `/dnd-tabletop/` resolving to it) on both
-`milodowling.com` and `milodowling.github.io`.
+What carried forward, and what was retired:
 
-**Assertion type (locked).** The TestScenario asserts **content identity after
-HTTP decoding** — the response body, after gzip/brotli decoding and line-ending
-normalization, must equal the bytes of
-`_preserved-dnd-content/dnd-tabletop/index.html`. Byte-identity over the wire
-is explicitly rejected: Cloudflare Pages may transparently compress, alter
-trailing whitespace, or normalize line endings, producing test flakes that do
-not correspond to real regressions. The test is tolerant of Pages-introduced
-gzip/whitespace/line-ending normalization and only fails on substantive content
-divergence.
+- **Carried forward:** `/dnd-tabletop/` MUST keep serving the virtual-tabletop
+  tool at `/dnd-tabletop/` and `/dnd-tabletop/index.html`, standalone (no
+  shell layout). The URL was shared with friends and remains canonical.
+- **Retired:** the byte-freeze. v1.0 of this constraint asserted content
+  identity against a preserved Hugo-era copy in `_preserved-dnd-content/`
+  (locked assertion: identity after HTTP decoding + line-ending
+  normalization, wire-level byte-identity rejected). The 2026-07-10 pass
+  absorbed the tool as first-party source at `public/dnd-tabletop/` and the
+  tool now evolves; the preserved copy, the build-time passthrough, and the
+  removal-marker system were removed per the (now deleted)
+  `adc_files/implementation/DND_PRESERVATION_ARTIFACTS.md` procedure.
 
-This will be resolved in a future ADC init pass for the dnd tabletop project. Ensure current implementations and contract artifacts related / specific to this constraint are flagged as they will later be removed.
+The continuity test is now `<dnd-test-url-continuity-01>`
+(`tests/shell/url-preservation.e2e.js`), which asserts 200s, served-body
+identity with the committed source, and standalone serving.
 
 **Parity:**
-- **Implementation Scope:** Astro static-asset passthrough for `_preserved-dnd-content/dnd-tabletop/` → `/dnd-tabletop/`, configured in `astro.config.mjs` or via a `public/` symlink/copy step
-- **Configuration Scope:** `astro.config.mjs`, build script
+- **Implementation Scope:** superseded — see `ADC_006_DND_TABLETOP.md`
 - **Tests:**
-  - See `<shell-test-url-preservation-04>`
+  - `<dnd-test-url-continuity-01>` in `ADC_006_DND_TABLETOP.md`
 
 ---
 
@@ -335,30 +334,19 @@ those gates live in the engine pass.
 
 ### [TestScenario: URL preservation — /dnd-tabletop/ serves the preserved tool] <shell-test-url-preservation-04>
 
-**Covers:** `<shell-constraint-url-preservation-04>`
-
-**Scenario.** Against the built site (either local preview or deployed Pages
-URL):
-
-1. Issue `GET /dnd-tabletop/`. Expect 200.
-2. Issue `GET /dnd-tabletop/index.html`. Expect 200.
-3. Both responses' bodies, after HTTP-level decoding (gzip/brotli) and
-   line-ending normalization (CRLF → LF), must equal the contents of
-   `_preserved-dnd-content/dnd-tabletop/index.html`.
-4. The test must run against both the `milodowling.com` deploy and the
-   `milodowling.github.io` deploy when both are configured.
-
-**Implementation note.** The decoding/normalization step is what distinguishes
-this from byte-identity, per the locked assertion type in
-`<shell-constraint-url-preservation-04>`. The test must tolerate Cloudflare
-Pages-introduced gzip/brotli compression, trailing-whitespace mutation, and
-CRLF/LF normalization. It must NOT tolerate substantive content divergence
-(any change to the tool's HTML, embedded JS, or embedded CSS).
+**Status: SUPERSEDED (2026-07-10) by `<dnd-test-url-continuity-01>` in
+`ADC_006_DND_TABLETOP.md`**, alongside its constraint
+`<shell-constraint-url-preservation-04>`. The v1.0 scenario asserted
+content identity between the served body and the preserved Hugo-era copy in
+`_preserved-dnd-content/` (after HTTP decoding + CRLF→LF normalization).
+That freeze ended when the D&D pass absorbed the tool as first-party source;
+the successor test keeps the 200/standalone/served-equals-committed-source
+assertions and adds an app-boot check. Same test file
+(`tests/shell/url-preservation.e2e.js`), rewritten under the new id.
 
 **Parity:**
-- **Implementation Scope:** `tests/shell/url-preservation.spec.js`
 - **Tests:**
-  - `tests/shell/url-preservation.spec.js`
+  - `<dnd-test-url-continuity-01>` → `tests/shell/url-preservation.e2e.js`
 
 ---
 
@@ -391,9 +379,15 @@ The only fully-designed section in this pass is specified in
 
 ### [Reference: Deferred section stubs] <shell-ref-stubs-01>
 
-Synth, D&D, and tools stubs are specified in
+Synth and tools stubs are specified in
 `contracts/ADC_005_DEFERRED_SECTION_STUBS.md` — specifically
-`<stubs-feature-synth-01>`, `<stubs-feature-dnd-02>`,
-`<stubs-feature-dnd-tabletop-passthrough-03>` (which binds to
-`<shell-constraint-url-preservation-04>` above), and `<stubs-feature-tools-04>`.
-Their internals are deferred to future ADC passes.
+`<stubs-feature-synth-01>` and `<stubs-feature-tools-04>`; their internals
+are deferred to future ADC passes. The D&D section graduated 2026-07-10:
+`<stubs-feature-dnd-02>` and `<stubs-feature-dnd-tabletop-passthrough-03>`
+are superseded by `contracts/ADC_006_DND_TABLETOP.md`.
+
+### [Reference: D&D section] <shell-ref-dnd-01>
+
+The D&D section — the tabletop tool at `/dnd-tabletop/`, shared-table
+multiplayer via the `dnd-sync` Worker, and the `/dnd/` landing — is
+specified in `contracts/ADC_006_DND_TABLETOP.md` (2026-07-10 init pass).

@@ -3,22 +3,24 @@ contract_id: deferred-section-stubs-adc-005
 title: "Deferred Section Stubs — Synth, D&D, Tools"
 author: "Milo Dowling"
 status: "active"
-version: 1.0
+version: 1.1
 created_date: "2026-05-20"
-last_updated: "2026-05-21"
+last_updated: "2026-07-10"
 ---
 
 # Deferred Section Stubs
 
-This contract specifies the mount points for the three sections whose internals
-are deferred to future ADC passes: synth, D&D, and tools. Each stub is a
+This contract specifies the mount points for the sections whose internals
+are deferred to future ADC passes: synth and tools. Each stub is a
 navigable placeholder page that future passes will fill in. The shell explicitly
 does NOT prescribe internals (data model, feed shape, UI patterns, hosting
 model) for these sections.
 
-The D&D stub additionally encodes a hard URL-preservation contract for the
-existing `/dnd-tabletop/` virtual-tabletop tool, which is live and shared with
-friends and must keep serving across the rebuild.
+**v1.1 (2026-07-10):** the D&D section graduated. Its init pass landed as
+`contracts/ADC_006_DND_TABLETOP.md`, superseding `<stubs-feature-dnd-02>`
+and `<stubs-feature-dnd-tabletop-passthrough-03>` below (both kept for the
+record). The `/dnd/` route and its stub-hygiene test remain governed by
+`<stubs-test-stubs-render-01>`, now on ADC_006's behalf.
 
 ---
 
@@ -72,56 +74,44 @@ contract.
 
 ### [Feature: D&D stub] <stubs-feature-dnd-02>
 
-The D&D section mounts at `/dnd/` and renders a stub placeholder page,
-analogous to the synth stub: shell layout, "in development" copy, no
-prescription of internals.
+**Status: SUPERSEDED (2026-07-10) by `<dnd-feature-landing-06>` in
+`ADC_006_DND_TABLETOP.md`.** The D&D init pass landed; `/dnd/` is now the
+section landing (still shell-framed, still links to `/dnd-tabletop/`, still
+imports no section data models — the render test's requirements carry
+forward unchanged).
 
-**Additionally**, the D&D stub coordinates with the URL-preservation contract:
-
-- The stub page at `/dnd/` SHOULD link to `/dnd-tabletop/` so visitors who
-  navigate to the D&D section can still reach the preserved virtual-tabletop
-  tool.
-- The preserved tool itself is published at `/dnd-tabletop/` per
-  `<stubs-feature-dnd-tabletop-passthrough-03>` below. It is NOT mounted under
-  `/dnd/dnd-tabletop/` — the original URL is preserved verbatim.
-
-The D&D pass will eventually redesign the full section and may absorb,
-relocate, or replace the preserved tool. Until then, the preserved tool
-remains canonical at `/dnd-tabletop/`.
+v1.0 text (record): the D&D section mounted at `/dnd/` as a stub placeholder
+analogous to the synth stub, linking to the preserved tool at
+`/dnd-tabletop/` (never mounted under `/dnd/dnd-tabletop/`), pending a
+future pass that would absorb, relocate, or replace the preserved tool.
 
 **Parity:**
 - **Implementation Scope:** `src/pages/dnd/index.astro`
 - **Tests:**
-  - `tests/stubs/dnd.spec.js`
+  - `tests/stubs/stubs-render.spec.js`
 
 ---
 
 ### [Feature: Preserved /dnd-tabletop/ passthrough] <stubs-feature-dnd-tabletop-passthrough-03>
 
-The single-file virtual-tabletop tool at
-`_preserved-dnd-content/dnd-tabletop/index.html` is published verbatim at
-`/dnd-tabletop/`. This is a build-time static-asset passthrough, not a routed
-page through the shell layout.
+**Status: SUPERSEDED (2026-07-10) by `<dnd-feature-tool-route-01>` in
+`ADC_006_DND_TABLETOP.md`.** The preservation era ended: the tool is now
+first-party committed source at `public/dnd-tabletop/` (no build-time copy
+step; the `dndTabletopPassthrough()` integration, the `.gitignore` staging
+entry, and `_preserved-dnd-content/` were all removed per the removal map,
+which is itself deleted). What survives as live contract in ADC_006: the
+URL stays canonical at `/dnd-tabletop/` and the tool serves standalone,
+never shell-wrapped.
 
-Implementation guidance:
-
-- The build pipeline copies `_preserved-dnd-content/dnd-tabletop/` into the
-  output directory at `dist/dnd-tabletop/` (or arranges an equivalent static
-  passthrough via Astro's `public/` directory, a symlink, or a build script).
-- The preserved tool is NOT wrapped in the shell layout. It served standalone
-  on the Hugo site and must continue to do so.
-- The preserved tool's `README.md` (`_preserved-dnd-content/dnd-tabletop/README.md`)
-  is NOT published; only `index.html` is exposed at the public route.
-
-This contract is enforced by the URL-preservation TestScenario
-`<shell-test-url-preservation-04>` in `ADC_001_SHELL_OVERVIEW.md`.
+v1.0 text (record): the preserved single-file tool was published verbatim
+from `_preserved-dnd-content/dnd-tabletop/index.html` via a build-time
+static-asset passthrough; the preserved `README.md` was not published;
+enforcement was `<shell-test-url-preservation-04>`.
 
 **Parity:**
-- **Implementation Scope:** `astro.config.mjs` (or `public/dnd-tabletop/` if used), build script
-- **Configuration Scope:** `astro.config.mjs`
+- **Implementation Scope:** superseded — see `ADC_006_DND_TABLETOP.md`
 - **Tests:**
-  - `<shell-test-url-preservation-04>` in `ADC_001_SHELL_OVERVIEW.md` covers
-    this feature
+  - `<dnd-test-url-continuity-01>` in `ADC_006_DND_TABLETOP.md`
 
 ---
 
@@ -164,9 +154,9 @@ or some other pattern. That is the tools ADC pass's call.
 
 ### [Reference: URL preservation TestScenario] <stubs-ref-url-preservation-01>
 
-The `/dnd-tabletop/` content-identity test is `<shell-test-url-preservation-04>`
-in `ADC_001_SHELL_OVERVIEW.md`. It is the binding test for
-`<stubs-feature-dnd-tabletop-passthrough-03>`.
+Superseded 2026-07-10: the binding test for the `/dnd-tabletop/` route is
+now `<dnd-test-url-continuity-01>` in `ADC_006_DND_TABLETOP.md`
+(`tests/shell/url-preservation.e2e.js`).
 
 ### [Reference: Future synth ADC pass] <stubs-ref-synth-future-01>
 
@@ -177,9 +167,9 @@ constrain that pass beyond the mount point and the optional `feed/` convention.
 
 ### [Reference: Future D&D ADC pass] <stubs-ref-dnd-future-01>
 
-The D&D section's full redesign is a later ADC session. That pass decides
-whether to keep `/dnd-tabletop/` as a separate URL or relocate the tool into a
-redesigned D&D section structure. Until then, URL preservation holds.
+Landed 2026-07-10 as `contracts/ADC_006_DND_TABLETOP.md`. The pass decided
+to KEEP `/dnd-tabletop/` as the canonical URL and absorbed the tool as
+first-party source with shared-table multiplayer.
 
 ### [Reference: Future tools ADC pass] <stubs-ref-tools-future-01>
 

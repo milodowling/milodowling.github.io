@@ -1,12 +1,10 @@
 ---
-// ADC-IMPLEMENTS: <stubs-feature-dnd-02>
+// ADC-IMPLEMENTS: <dnd-feature-landing-06>
 //
-// D&D section stub at /dnd/. Navigable placeholder, shell-layout-framed.
-// The stub also surfaces the preserved virtual-tabletop tool at
-// /dnd-tabletop/ per the coordination clause in <stubs-feature-dnd-02> and
-// the URL-preservation contract <stubs-feature-dnd-tabletop-passthrough-03>.
-//
-// The redesign of the full D&D section is a later ADC pass.
+// D&D section landing at /dnd/. Shell-layout-framed, copy + link only —
+// the tool itself lives at /dnd-tabletop/ (its original, shared URL) and
+// serves standalone per <dnd-feature-tool-route-01> in
+// contracts/ADC_006_DND_TABLETOP.md.
 import ShellLayout from "../../layouts/ShellLayout.astro";
 ---
 
@@ -14,12 +12,14 @@ import ShellLayout from "../../layouts/ShellLayout.astro";
   <section class="stub">
     <h1 class="stub-title">D&amp;D</h1>
     <p class="stub-copy">
-      In development. The full D&amp;D section lands in its own ADC pass.
+      A virtual tabletop for our sessions: upload a map, drop tokens on it,
+      draw markers, toggle a grid — and share a table so everyone sees the
+      same board live.
     </p>
     <p class="stub-copy">
-      The existing virtual-tabletop tool is preserved at
-      <a class="stub-link" href="/dnd-tabletop/">/dnd-tabletop/</a> and
-      continues to serve unchanged across the rebuild.
+      Open the tabletop at
+      <a class="stub-link" href="/dnd-tabletop/">/dnd-tabletop/</a>.
+      To play together, hit “Start shared table” and send the invite link.
     </p>
   </section>
 </ShellLayout>

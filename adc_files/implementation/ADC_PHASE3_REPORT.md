@@ -28,8 +28,9 @@ the built HTML.
 
 The `/dnd-tabletop/` preserved tool remains byte-identical to its source in
 `_preserved-dnd-content/dnd-tabletop/index.html` after the Phase 3 build.
-`DND-PRESERVATION` removal markers are intact at all four documented
-locations. No edits touched `_preserved-dnd-content/`, `public/dnd-tabletop/`,
+The dnd preservation removal markers were intact at all four documented
+locations (literal marker string elided 2026-07-10 after the D&D ADC pass
+executed the removal procedure). No edits touched `_preserved-dnd-content/`, `public/dnd-tabletop/`,
 `astro.config.mjs`, the section manifest, `ShellLayout.astro`, `Nav.astro`,
 the R2 helper, or the homepage.
 
@@ -182,7 +183,7 @@ Phase 4 (validation) owns the full TestScenario suite per the roadmap. Phase
 | `/dnd-tabletop/` returns 200                                                           | PASS |
 | `cmp -s dist/dnd-tabletop/index.html _preserved-dnd-content/dnd-tabletop/index.html`   | PASS — byte-identical |
 | `/dnd/` page contains a link to `/dnd-tabletop/`                                       | PASS — `<a class="stub-link" href="/dnd-tabletop/">` |
-| `DND-PRESERVATION` markers intact at four documented locations                         | PASS — `astro.config.mjs:19`, `astro.config.mjs:39`, `README.md:126`, `DND_PRESERVATION_ARTIFACTS.md:17` |
+| dnd preservation markers intact at four documented locations (string elided 2026-07-10 post-removal) | PASS — `astro.config.mjs:19`, `astro.config.mjs:39`, `README.md:126`, `DND_PRESERVATION_ARTIFACTS.md:17` |
 | `grep -rn "Optional" src/` returns zero hits in code (only comments/markdown)          | PASS — 4 hits, all in comments or markdown body |
 | `find src -type f \( -name "*.ts" -o -name "*.tsx" \) ! -name "env.d.ts"` returns empty | PASS    |
 | `grep -l "portfolio-\|synth-\|dnd-\|tools-\|stub-" src/layouts/ src/components/ src/styles/ -r` returns empty | PASS — no section namespace leaked into shell |

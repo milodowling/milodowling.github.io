@@ -1,0 +1,1885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>D&D Tabletop</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0d0d1a;
+      color: #e8dcc4;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .app {
+      display: flex;
+      height: 100vh;
+      gap: 0;
+    }
+
+    /* Canvas Area */
+    .canvas-container {
+      flex: 1;
+      position: relative;
+      background: #1a1a2e;
+      border-right: 3px solid #2a2a4e;
+    }
+
+    #mainCanvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 200px;
+      background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+      display: flex;
+      flex-direction: column;
+      border-left: 1px solid #c9a95933;
+      overflow-y: auto;
+    }
+
+    .sidebar-section {
+      padding: 12px;
+      border-bottom: 1px solid #c9a95933;
+    }
+
+    .sidebar-section h3 {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #c9a959;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    /* Mode Buttons */
+    .mode-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .mode-btn {
+      background: #2a2a4e;
+      border: 1px solid #3a3a5e;
+      color: #e8dcc4;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      text-align: left;
+      transition: all 0.15s ease;
+    }
+
+    .mode-btn:hover {
+      background: #3a3a5e;
+      border-color: #c9a959;
+    }
+
+    .mode-btn.active {
+      background: #c9a959;
+      color: #1a1a2e;
+      border-color: #d4a574;
+      font-weight: 600;
+    }
+
+    .mode-btn:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+
+    .mode-btn:disabled:hover {
+      background: #2a2a4e;
+      border-color: #3a3a5e;
+    }
+
+    .clear-btn {
+      background: #4a2a2a;
+      border-color: #6a3a3a;
+      margin-top: 6px;
+    }
+
+    .clear-btn:hover {
+      background: #6a3a3a;
+      border-color: #8a4a4a;
+    }
+
+    .undo-row {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .undo-row .mode-btn {
+      flex: 1;
+      text-align: center;
+    }
+
+    /* Draw Settings */
+    .draw-settings {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid #3a3a5e;
+    }
+
+    .draw-colors {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .color-swatch {
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      cursor: pointer;
+      border: 2px solid #3a3a5e;
+      transition: all 0.15s ease;
+    }
+
+    .color-swatch:hover {
+      border-color: #c9a959;
+      transform: scale(1.1);
+    }
+
+    .color-swatch.active {
+      border-color: #c9a959;
+      box-shadow: 0 0 8px #c9a95966;
+    }
+
+    .draw-thickness {
+      display: flex;
+      gap: 4px;
+    }
+
+    .thickness-btn {
+      flex: 1;
+      background: #2a2a4e;
+      border: 1px solid #3a3a5e;
+      color: #a89a7a;
+      padding: 4px 6px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 11px;
+      transition: all 0.15s ease;
+    }
+
+    .thickness-btn:hover {
+      border-color: #c9a959;
+    }
+
+    .thickness-btn.active {
+      background: #3a4a5e;
+      border-color: #c9a959;
+      color: #e8dcc4;
+    }
+
+    .draw-hint {
+      margin-top: 8px;
+      font-size: 10px;
+      color: #6a6a8a;
+      font-style: italic;
+    }
+
+    /* Upload Buttons */
+    .upload-btn {
+      background: linear-gradient(180deg, #2a3a4e 0%, #1a2a3e 100%);
+      border: 1px solid #c9a95966;
+      color: #e8dcc4;
+      padding: 10px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      width: 100%;
+      transition: all 0.15s ease;
+    }
+
+    .upload-btn:hover {
+      background: linear-gradient(180deg, #3a4a5e 0%, #2a3a4e 100%);
+      border-color: #c9a959;
+    }
+
+    .upload-btn:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+
+    .upload-btn + .upload-btn {
+      margin-top: 6px;
+    }
+
+    /* Table (multiplayer) */
+    .table-status {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 8px;
+      font-size: 12px;
+      color: #a89a7a;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #6a6a8a;
+      flex: none;
+    }
+
+    .status-dot.live {
+      background: #33aa33;
+      box-shadow: 0 0 6px #33aa3388;
+    }
+
+    .status-dot.connecting {
+      background: #ccaa33;
+    }
+
+    .room-code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      color: #c9a959;
+      letter-spacing: 1px;
+    }
+
+    /* Grid controls */
+    .grid-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #a89a7a;
+    }
+
+    .grid-row input[type="checkbox"] {
+      accent-color: #c9a959;
+    }
+
+    .grid-row input[type="number"] {
+      width: 58px;
+      background: #2a2a4e;
+      border: 1px solid #3a3a5e;
+      color: #e8dcc4;
+      border-radius: 3px;
+      padding: 3px 5px;
+      font-size: 12px;
+    }
+
+    /* Icon Library */
+    .icon-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 120px;
+    }
+
+    .icon-list {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 8px;
+      padding-right: 4px;
+    }
+
+    .icon-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .icon-list::-webkit-scrollbar-track {
+      background: #1a1a2e;
+    }
+
+    .icon-list::-webkit-scrollbar-thumb {
+      background: #c9a95966;
+      border-radius: 3px;
+    }
+
+    .icon-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px;
+      background: #2a2a4e;
+      border: 1px solid #3a3a5e;
+      border-radius: 4px;
+      cursor: grab;
+      transition: all 0.15s ease;
+      user-select: none;
+    }
+
+    .icon-item:hover {
+      border-color: #c9a959;
+    }
+
+    .icon-item:active {
+      cursor: grabbing;
+    }
+
+    .icon-item.dragging {
+      opacity: 0.5;
+    }
+
+    .icon-item img {
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+      border-radius: 2px;
+    }
+
+    .icon-item .icon-name {
+      font-size: 12px;
+      color: #a89a7a;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .icon-item input.icon-name-input {
+      flex: 1;
+      min-width: 0;
+      background: #1a1a2e;
+      border: 1px solid #c9a959;
+      color: #e8dcc4;
+      border-radius: 3px;
+      font-size: 12px;
+      padding: 2px 4px;
+    }
+
+    .icon-rename,
+    .icon-delete {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 2px 4px;
+      font-size: 13px;
+      border-radius: 2px;
+    }
+
+    .icon-rename {
+      color: #6a6a8a;
+    }
+
+    .icon-rename:hover {
+      color: #c9a959;
+      background: #1a1a2e;
+    }
+
+    .icon-delete {
+      color: #6a4a4a;
+      font-size: 14px;
+    }
+
+    .icon-delete:hover {
+      color: #aa6a6a;
+      background: #3a2a2a;
+    }
+
+    /* Hidden inputs / panels */
+    .hidden {
+      display: none;
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 20px 10px;
+      color: #6a6a8a;
+      font-size: 12px;
+      font-style: italic;
+    }
+
+    /* Canvas cursors */
+    .cursor-crosshair { cursor: crosshair; }
+    .cursor-move { cursor: move; }
+    .cursor-pointer { cursor: pointer; }
+    .cursor-grab { cursor: grab; }
+    .cursor-grabbing { cursor: grabbing; }
+
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="canvas-container">
+      <canvas id="mainCanvas"></canvas>
+    </div>
+
+    <div class="sidebar">
+      <div class="sidebar-section">
+        <h3>Table</h3>
+        <div id="tableOffline">
+          <button class="upload-btn" id="startTableBtn">Start shared table</button>
+          <div class="draw-hint" id="syncHint">Play with friends: start a table, share the link.</div>
+        </div>
+        <div id="tableOnline" class="hidden">
+          <div class="table-status">
+            <span class="status-dot" id="statusDot"></span>
+            <span id="peersLabel">connecting…</span>
+          </div>
+          <div class="table-status">room <span class="room-code" id="roomCodeLabel"></span></div>
+          <button class="upload-btn" id="copyLinkBtn">Copy invite link</button>
+          <button class="mode-btn clear-btn" id="leaveTableBtn">Leave table</button>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <h3>Mode</h3>
+        <div class="mode-buttons">
+          <button class="mode-btn active" data-mode="draw">Draw</button>
+          <button class="mode-btn" data-mode="erase">Erase</button>
+          <button class="mode-btn clear-btn" id="clearDrawings">Clear</button>
+        </div>
+        <div class="undo-row">
+          <button class="mode-btn" id="undoBtn" title="Undo drawing (Ctrl/Cmd+Z)">↩ Undo</button>
+          <button class="mode-btn" id="redoBtn" title="Redo drawing (Ctrl/Cmd+Shift+Z)">↪ Redo</button>
+        </div>
+        <div class="draw-settings" id="drawSettings">
+          <div class="draw-colors">
+            <div class="color-swatch active" data-color="#cc3333" style="background:#cc3333"></div>
+            <div class="color-swatch" data-color="#3366cc" style="background:#3366cc"></div>
+            <div class="color-swatch" data-color="#33aa33" style="background:#33aa33"></div>
+            <div class="color-swatch" data-color="#ccaa33" style="background:#ccaa33"></div>
+            <div class="color-swatch" data-color="#ffffff" style="background:#ffffff"></div>
+          </div>
+          <div class="draw-thickness">
+            <button class="thickness-btn" data-width="2">Thin</button>
+            <button class="thickness-btn active" data-width="4">Med</button>
+            <button class="thickness-btn" data-width="8">Thick</button>
+          </div>
+          <div class="draw-hint">Hold Shift for straight lines</div>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <h3>Backdrop</h3>
+        <button class="upload-btn" id="backdropBtn">Upload Backdrop</button>
+        <input type="file" id="backdropInput" class="hidden" accept="image/png,image/jpeg">
+        <div class="grid-row" style="margin-top:10px">
+          <label><input type="checkbox" id="gridToggle"> Grid</label>
+          <input type="number" id="gridSize" min="8" max="4096" step="1" title="Grid size (map pixels)">
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <h3>Session</h3>
+        <button class="upload-btn" id="exportBtn">Export table…</button>
+        <button class="upload-btn" id="importBtn">Import table…</button>
+        <input type="file" id="importInput" class="hidden" accept="application/json,.json">
+      </div>
+
+      <div class="sidebar-section icon-section">
+        <h3>Icons</h3>
+        <button class="upload-btn" id="iconBtn">+ Add Icon</button>
+        <input type="file" id="iconInput" class="hidden" accept="image/png" multiple>
+        <div class="draw-hint">PNGs r best · ✎ to rename</div>
+        <div class="icon-list" id="iconList">
+          <div class="empty-state">No icons yet</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    // ADC-IMPLEMENTS: <dnd-feature-tool-route-01> <dnd-feature-multiplayer-02>
+    // ADC-IMPLEMENTS: <dnd-feature-table-features-05>
+    //
+    // All table state lives in `table` (shape defined in ./reducer.js) and
+    // every mutation is an op sent through dispatch(). In a shared table the
+    // same ops stream to the dnd-sync Worker, which rebroadcasts them to the
+    // other clients — see contracts/ADC_006_DND_TABLETOP.md.
+    //
+    // Coordinates in `table` are WORLD coordinates (backdrop natural pixels,
+    // or DEFAULT_WORLD when no backdrop is set). The view transform maps
+    // world to the local canvas; interaction chrome (handles, delete button,
+    // erase radius) is sized in screen pixels and divided by the view scale
+    // so it feels identical on any screen.
+    import {
+      emptyState,
+      applyOp,
+      normalizeState,
+      isEmptyState,
+      worldSize,
+    } from "./reducer.js";
+    import { encodeFrames, FrameAssembler } from "./sync-protocol.js";
+
+    // ============ SYNC SERVER ============
+    // Resolution order: explicit ?sync= override (used by tests), local
+    // wrangler dev when the page itself is served from localhost, else the
+    // deployed dnd-sync Worker. The production URL is stamped at deploy
+    // time; until then the Start button explains itself and everything
+    // else — solo play, saves, export — works without a server.
+    const SYNC_SERVER = (() => {
+      const q = new URLSearchParams(location.search).get("sync");
+      if (q) return q;
+      if (["localhost", "127.0.0.1", "[::1]"].includes(location.hostname)) {
+        return "ws://127.0.0.1:8787";
+      }
+      return "wss://SET-AFTER-WORKER-DEPLOY";
+    })();
+    const SYNC_CONFIGURED = !SYNC_SERVER.includes("SET-AFTER-WORKER-DEPLOY");
+
+    // ============ STATE ============
+    let table = emptyState();
+
+    // Ephemeral interaction state — never synced, never persisted.
+    const session = {
+      mode: "draw",
+      drawColor: "#cc3333",
+      drawWidth: 4, // screen px at draw time; stored per-path in world units
+      shiftHeld: false,
+      isDrawing: false,
+      currentPath: null, // world coords
+      eraseBatch: [], // paths removed during one erase stroke (for undo)
+      hoveredPiece: null, // piece id
+      draggingPiece: null,
+      resizingPiece: null,
+      resizeHandle: null,
+      dragOffset: { x: 0, y: 0 }, // world
+      dragFromSidebar: null, // icon id
+    };
+
+    const undoStack = []; // { undo: [ops], redo: [ops] } — drawings only
+    const redoStack = [];
+    const UNDO_LIMIT = 100;
+
+    const imageCache = new Map(); // src -> HTMLImageElement
+
+    function uid() {
+      const bytes = new Uint8Array(8);
+      crypto.getRandomValues(bytes);
+      return Array.from(bytes, (b) => b.toString(36)).join("").slice(0, 12);
+    }
+
+    // ============ DOM ELEMENTS ============
+    const canvas = document.getElementById("mainCanvas");
+    const ctx = canvas.getContext("2d");
+    const canvasContainer = document.querySelector(".canvas-container");
+    const modeButtons = document.querySelectorAll(".mode-btn[data-mode]");
+    const clearBtn = document.getElementById("clearDrawings");
+    const undoBtn = document.getElementById("undoBtn");
+    const redoBtn = document.getElementById("redoBtn");
+    const backdropBtn = document.getElementById("backdropBtn");
+    const backdropInput = document.getElementById("backdropInput");
+    const gridToggle = document.getElementById("gridToggle");
+    const gridSizeInput = document.getElementById("gridSize");
+    const exportBtn = document.getElementById("exportBtn");
+    const importBtn = document.getElementById("importBtn");
+    const importInput = document.getElementById("importInput");
+    const iconBtn = document.getElementById("iconBtn");
+    const iconInput = document.getElementById("iconInput");
+    const iconList = document.getElementById("iconList");
+    const drawSettings = document.getElementById("drawSettings");
+    const colorSwatches = document.querySelectorAll(".color-swatch");
+    const thicknessButtons = document.querySelectorAll(".thickness-btn");
+    const startTableBtn = document.getElementById("startTableBtn");
+    const syncHint = document.getElementById("syncHint");
+    const tableOffline = document.getElementById("tableOffline");
+    const tableOnline = document.getElementById("tableOnline");
+    const statusDot = document.getElementById("statusDot");
+    const peersLabel = document.getElementById("peersLabel");
+    const roomCodeLabel = document.getElementById("roomCodeLabel");
+    const copyLinkBtn = document.getElementById("copyLinkBtn");
+    const leaveTableBtn = document.getElementById("leaveTableBtn");
+
+    // ============ CANVAS SETUP ============
+    function resizeCanvas() {
+      const rect = canvasContainer.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+      render();
+    }
+
+    window.addEventListener("resize", resizeCanvas);
+
+    // ============ VIEW TRANSFORM (world <-> screen) ============
+    function view() {
+      const wsz = worldSize(table);
+      const scale = Math.min(canvas.width / wsz.w, canvas.height / wsz.h) || 1;
+      return {
+        scale,
+        ox: (canvas.width - wsz.w * scale) / 2,
+        oy: (canvas.height - wsz.h * scale) / 2,
+        wsz,
+      };
+    }
+
+    function toWorld(p) {
+      const v = view();
+      return { x: (p.x - v.ox) / v.scale, y: (p.y - v.oy) / v.scale };
+    }
+
+    // ============ RENDERING ============
+    function render() {
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const v = view();
+      ctx.setTransform(v.scale, 0, 0, v.scale, v.ox, v.oy);
+      const px = 1 / v.scale; // one screen pixel, in world units
+
+      // World bounds (subtle frame when no backdrop, so the table reads)
+      if (!table.backdrop) {
+        ctx.strokeStyle = "#2a2a4e";
+        ctx.lineWidth = 2 * px;
+        ctx.strokeRect(0, 0, v.wsz.w, v.wsz.h);
+      }
+
+      // Backdrop
+      if (table.backdrop) {
+        const img = imageCache.get(table.backdrop.src);
+        if (img) ctx.drawImage(img, 0, 0, v.wsz.w, v.wsz.h);
+      }
+
+      // Grid overlay
+      if (table.grid.on) {
+        ctx.strokeStyle = "rgba(201, 169, 89, 0.28)";
+        ctx.lineWidth = px;
+        ctx.beginPath();
+        for (let x = table.grid.size; x < v.wsz.w; x += table.grid.size) {
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, v.wsz.h);
+        }
+        for (let y = table.grid.size; y < v.wsz.h; y += table.grid.size) {
+          ctx.moveTo(0, y);
+          ctx.lineTo(v.wsz.w, y);
+        }
+        ctx.stroke();
+      }
+
+      // Placed pieces
+      for (const piece of table.pieces) {
+        const icon = table.icons.find((i) => i.id === piece.iconId);
+        const img = icon && imageCache.get(icon.src);
+        if (!img) continue;
+        ctx.drawImage(img, piece.x, piece.y, piece.w, piece.h);
+
+        const isActive =
+          session.hoveredPiece === piece.id ||
+          session.draggingPiece === piece.id ||
+          session.resizingPiece === piece.id;
+        if (isActive) {
+          ctx.strokeStyle = "#c9a959";
+          ctx.lineWidth = 2 * px;
+          ctx.setLineDash([5 * px, 5 * px]);
+          ctx.strokeRect(
+            piece.x - 2 * px,
+            piece.y - 2 * px,
+            piece.w + 4 * px,
+            piece.h + 4 * px,
+          );
+          ctx.setLineDash([]);
+
+          const handle = 8 * px;
+          ctx.fillStyle = "#c9a959";
+          for (const [hx, hy] of [
+            [piece.x, piece.y],
+            [piece.x + piece.w, piece.y],
+            [piece.x, piece.y + piece.h],
+            [piece.x + piece.w, piece.y + piece.h],
+          ]) {
+            ctx.fillRect(hx - handle / 2, hy - handle / 2, handle, handle);
+          }
+
+          // Delete button (inside top-right corner)
+          const delX = piece.x + piece.w - 12 * px;
+          const delY = piece.y + 12 * px;
+          ctx.fillStyle = "#aa4444";
+          ctx.beginPath();
+          ctx.arc(delX, delY, 10 * px, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = "#fff";
+          ctx.font = `bold ${14 * px}px sans-serif`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText("×", delX, delY);
+        }
+      }
+
+      // Drawings
+      for (const path of table.drawings) {
+        strokePath(path);
+      }
+      if (session.currentPath && session.currentPath.points.length >= 2) {
+        strokePath(session.currentPath);
+      }
+
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+    }
+
+    function strokePath(path) {
+      if (path.points.length < 2) return;
+      ctx.strokeStyle = path.color;
+      ctx.lineWidth = path.width;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.beginPath();
+      ctx.moveTo(path.points[0].x, path.points[0].y);
+      for (let i = 1; i < path.points.length; i++) {
+        ctx.lineTo(path.points[i].x, path.points[i].y);
+      }
+      ctx.stroke();
+    }
+
+    // ============ IMAGE LOADING ============
+    function loadImage(src) {
+      return new Promise((resolve) => {
+        if (imageCache.has(src)) {
+          resolve(imageCache.get(src));
+          return;
+        }
+        const img = new Image();
+        img.onload = () => {
+          imageCache.set(src, img);
+          resolve(img);
+        };
+        img.onerror = () => resolve(null);
+        img.src = src;
+      });
+    }
+
+    /** Ensure every image referenced by the current table is decoded. */
+    async function ensureAssets() {
+      const jobs = [];
+      if (table.backdrop) jobs.push(loadImage(table.backdrop.src));
+      for (const icon of table.icons) jobs.push(loadImage(icon.src));
+      await Promise.all(jobs);
+      // v1-migrated backdrops carry no natural size; fill it in once.
+      if (table.backdrop && !table.backdrop.w) {
+        const img = imageCache.get(table.backdrop.src);
+        if (img) {
+          table.backdrop.w = img.naturalWidth;
+          table.backdrop.h = img.naturalHeight;
+        }
+      }
+    }
+
+    // ============ REMOVE BACKGROUND AND TRIM ============
+    function removeBackgroundAndTrim(dataUrl) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          const tempCanvas = document.createElement("canvas");
+          const tempCtx = tempCanvas.getContext("2d");
+          tempCanvas.width = img.width;
+          tempCanvas.height = img.height;
+          tempCtx.drawImage(img, 0, 0);
+
+          const imageData = tempCtx.getImageData(0, 0, img.width, img.height);
+          const data = imageData.data;
+
+          // Sample corner pixels to detect background color
+          const corners = [
+            0, // top-left
+            (img.width - 1) * 4, // top-right
+            (img.height - 1) * img.width * 4, // bottom-left
+            ((img.height - 1) * img.width + (img.width - 1)) * 4, // bottom-right
+          ];
+
+          const cornerColors = corners.map((idx) => ({
+            r: data[idx],
+            g: data[idx + 1],
+            b: data[idx + 2],
+            a: data[idx + 3],
+          }));
+
+          // Check if corners are similar (potential background)
+          function colorsMatch(c1, c2, tolerance = 30) {
+            return (
+              Math.abs(c1.r - c2.r) <= tolerance &&
+              Math.abs(c1.g - c2.g) <= tolerance &&
+              Math.abs(c1.b - c2.b) <= tolerance &&
+              c1.a > 200 &&
+              c2.a > 200
+            ); // both opaque
+          }
+
+          // Find dominant corner color (appears in 3+ corners)
+          let bgColor = null;
+          for (let i = 0; i < 4; i++) {
+            let matches = 1;
+            for (let j = 0; j < 4; j++) {
+              if (i !== j && colorsMatch(cornerColors[i], cornerColors[j])) {
+                matches++;
+              }
+            }
+            if (matches >= 3) {
+              bgColor = cornerColors[i];
+              break;
+            }
+          }
+
+          // If background detected, make matching pixels transparent
+          if (bgColor) {
+            const tolerance = 40;
+            for (let i = 0; i < data.length; i += 4) {
+              const r = data[i];
+              const g = data[i + 1];
+              const b = data[i + 2];
+
+              if (
+                Math.abs(r - bgColor.r) <= tolerance &&
+                Math.abs(g - bgColor.g) <= tolerance &&
+                Math.abs(b - bgColor.b) <= tolerance
+              ) {
+                data[i + 3] = 0; // Set alpha to 0
+              }
+            }
+            tempCtx.putImageData(imageData, 0, 0);
+          }
+
+          // Now find bounding box of non-transparent pixels
+          let minX = img.width,
+            minY = img.height,
+            maxX = 0,
+            maxY = 0;
+          let hasContent = false;
+
+          for (let y = 0; y < img.height; y++) {
+            for (let x = 0; x < img.width; x++) {
+              const alpha = data[(y * img.width + x) * 4 + 3];
+              if (alpha > 10) {
+                hasContent = true;
+                if (x < minX) minX = x;
+                if (x > maxX) maxX = x;
+                if (y < minY) minY = y;
+                if (y > maxY) maxY = y;
+              }
+            }
+          }
+
+          // If no content, return original
+          if (!hasContent) {
+            resolve(dataUrl);
+            return;
+          }
+
+          // Add 1px padding
+          const padding = 1;
+          minX = Math.max(0, minX - padding);
+          minY = Math.max(0, minY - padding);
+          maxX = Math.min(img.width - 1, maxX + padding);
+          maxY = Math.min(img.height - 1, maxY + padding);
+
+          const cropWidth = maxX - minX + 1;
+          const cropHeight = maxY - minY + 1;
+
+          // Create cropped canvas
+          const cropCanvas = document.createElement("canvas");
+          const cropCtx = cropCanvas.getContext("2d");
+          cropCanvas.width = cropWidth;
+          cropCanvas.height = cropHeight;
+          cropCtx.drawImage(
+            tempCanvas,
+            minX,
+            minY,
+            cropWidth,
+            cropHeight,
+            0,
+            0,
+            cropWidth,
+            cropHeight,
+          );
+
+          resolve(cropCanvas.toDataURL("image/png"));
+        };
+        img.src = dataUrl;
+      });
+    }
+
+    // ============ DISPATCH (local mutation + sync) ============
+    /**
+     * Apply a local op: reduce, persist, render, and stream to the room.
+     * `record` pushes an undo entry — drawing ops only, per the section
+     * contract (undo history covers markers, not tokens or images).
+     */
+    function dispatch(op, { record = null, send = true } = {}) {
+      applyOp(table, op);
+      if (record) {
+        undoStack.push(record);
+        if (undoStack.length > UNDO_LIMIT) undoStack.shift();
+        redoStack.length = 0;
+      }
+      saveLocal();
+      render();
+      updateUndoButtons();
+      if (send) netSend(op);
+    }
+
+    /** Apply an op that arrived from the room. */
+    async function applyRemote(op) {
+      applyOp(table, op);
+      await ensureAssets();
+      renderIconList();
+      syncGridControls();
+      saveLocal();
+      render();
+    }
+
+    // ============ UNDO / REDO (drawings) ============
+    function undo() {
+      const entry = undoStack.pop();
+      if (!entry) return;
+      for (const op of entry.undo) dispatch(op);
+      redoStack.push(entry);
+      updateUndoButtons();
+    }
+
+    function redoAction() {
+      const entry = redoStack.pop();
+      if (!entry) return;
+      for (const op of entry.redo) dispatch(op);
+      undoStack.push(entry);
+      updateUndoButtons();
+    }
+
+    function updateUndoButtons() {
+      undoBtn.disabled = undoStack.length === 0;
+      redoBtn.disabled = redoStack.length === 0;
+    }
+
+    undoBtn.addEventListener("click", undo);
+    redoBtn.addEventListener("click", redoAction);
+
+    document.addEventListener("keydown", (e) => {
+      const meta = e.metaKey || e.ctrlKey;
+      if (!meta) return;
+      const key = e.key.toLowerCase();
+      if (key === "z" && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+      } else if ((key === "z" && e.shiftKey) || key === "y") {
+        e.preventDefault();
+        redoAction();
+      }
+    });
+
+    // ============ MODE SWITCHING ============
+    modeButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        session.mode = btn.dataset.mode;
+        modeButtons.forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        updateDrawSettingsVisibility();
+        updateCursor();
+        render();
+      });
+    });
+
+    function updateDrawSettingsVisibility() {
+      drawSettings.style.display = session.mode === "draw" ? "block" : "none";
+    }
+
+    function updateCursor() {
+      canvas.className = "";
+      if (session.mode === "draw" || session.mode === "erase") {
+        canvas.classList.add("cursor-crosshair");
+      } else {
+        canvas.classList.add("cursor-pointer");
+      }
+    }
+
+    // ============ DRAW SETTINGS ============
+    colorSwatches.forEach((swatch) => {
+      swatch.addEventListener("click", () => {
+        colorSwatches.forEach((s) => s.classList.remove("active"));
+        swatch.classList.add("active");
+        session.drawColor = swatch.dataset.color;
+      });
+    });
+
+    thicknessButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        thicknessButtons.forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        session.drawWidth = parseInt(btn.dataset.width);
+      });
+    });
+
+    // Shift key tracking
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Shift") session.shiftHeld = true;
+    });
+    document.addEventListener("keyup", (e) => {
+      if (e.key === "Shift") session.shiftHeld = false;
+    });
+
+    // ============ BACKDROP ============
+    backdropBtn.addEventListener("click", () => backdropInput.click());
+
+    backdropInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const src = event.target.result;
+        const img = await loadImage(src);
+        if (!img) return;
+        dispatch({
+          op: "backdrop.set",
+          src,
+          w: img.naturalWidth,
+          h: img.naturalHeight,
+        });
+      };
+      reader.readAsDataURL(file);
+      e.target.value = "";
+    });
+
+    // ============ GRID ============
+    function syncGridControls() {
+      gridToggle.checked = table.grid.on;
+      if (document.activeElement !== gridSizeInput) {
+        gridSizeInput.value = table.grid.size;
+      }
+    }
+
+    function dispatchGrid() {
+      dispatch({
+        op: "grid.set",
+        on: gridToggle.checked,
+        size: Number(gridSizeInput.value) || table.grid.size,
+      });
+    }
+
+    gridToggle.addEventListener("change", dispatchGrid);
+    gridSizeInput.addEventListener("change", dispatchGrid);
+
+    // ============ SESSION EXPORT / IMPORT ============
+    exportBtn.addEventListener("click", () => {
+      const blob = new Blob([JSON.stringify(table)], {
+        type: "application/json",
+      });
+      const a = document.createElement("a");
+      const stamp = new Date().toISOString().slice(0, 10);
+      a.href = URL.createObjectURL(blob);
+      a.download = `dnd-table-${stamp}.json`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+
+    importBtn.addEventListener("click", () => importInput.click());
+
+    importInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        let parsed;
+        try {
+          parsed = JSON.parse(event.target.result);
+        } catch {
+          return;
+        }
+        dispatch({ op: "state.replace", state: parsed });
+        await ensureAssets();
+        renderIconList();
+        syncGridControls();
+        render();
+      };
+      reader.readAsText(file);
+      e.target.value = "";
+    });
+
+    // ============ ICON LIBRARY ============
+    iconBtn.addEventListener("click", () => iconInput.click());
+
+    iconInput.addEventListener("change", (e) => {
+      const files = Array.from(e.target.files);
+      files.forEach((file) => {
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+          // Remove background and trim PNG icons
+          const processed = await removeBackgroundAndTrim(event.target.result);
+          await loadImage(processed);
+          const name = (file.name || "Icon")
+            .replace(/\.[^.]+$/, "")
+            .slice(0, 60);
+          dispatch({
+            op: "icon.add",
+            icon: { id: uid(), name: name || "Icon", src: processed },
+          });
+          renderIconList();
+        };
+        reader.readAsDataURL(file);
+      });
+      e.target.value = "";
+    });
+
+    function renderIconList() {
+      if (table.icons.length === 0) {
+        iconList.innerHTML =
+          '<div class="empty-state">No icons yet. Drag icons onto the map.</div>';
+        return;
+      }
+
+      iconList.innerHTML = "";
+      for (const icon of table.icons) {
+        const item = document.createElement("div");
+        item.className = "icon-item";
+        item.draggable = true;
+
+        const img = document.createElement("img");
+        img.src = icon.src;
+        img.alt = icon.name;
+        img.draggable = false;
+
+        const name = document.createElement("span");
+        name.className = "icon-name";
+        name.textContent = icon.name;
+        name.title = icon.name;
+
+        const rename = document.createElement("button");
+        rename.className = "icon-rename";
+        rename.textContent = "✎";
+        rename.title = "Rename";
+
+        const del = document.createElement("button");
+        del.className = "icon-delete";
+        del.textContent = "×";
+        del.title = "Delete icon (and its placed tokens)";
+
+        item.append(img, name, rename, del);
+        iconList.appendChild(item);
+
+        function startRename() {
+          const input = document.createElement("input");
+          input.className = "icon-name-input";
+          input.value = icon.name;
+          input.maxLength = 60;
+          name.replaceWith(input);
+          input.focus();
+          input.select();
+          let done = false;
+          const commit = () => {
+            if (done) return;
+            done = true;
+            const value = input.value.trim();
+            if (value && value !== icon.name) {
+              dispatch({ op: "icon.rename", id: icon.id, name: value });
+            }
+            renderIconList();
+          };
+          input.addEventListener("blur", commit);
+          input.addEventListener("keydown", (e) => {
+            e.stopPropagation();
+            if (e.key === "Enter") commit();
+            if (e.key === "Escape") {
+              done = true;
+              renderIconList();
+            }
+          });
+          // Renaming must not start a drag.
+          input.addEventListener("mousedown", (e) => e.stopPropagation());
+          item.draggable = false;
+        }
+
+        rename.addEventListener("click", (e) => {
+          e.stopPropagation();
+          startRename();
+        });
+        name.addEventListener("dblclick", startRename);
+
+        del.addEventListener("click", (e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          dispatch({ op: "icon.remove", id: icon.id });
+          renderIconList();
+        });
+
+        // Drag from sidebar (mouse)
+        item.addEventListener("dragstart", (e) => {
+          session.dragFromSidebar = icon.id;
+          item.classList.add("dragging");
+          e.dataTransfer.effectAllowed = "copy";
+          e.dataTransfer.setData("text/plain", icon.id);
+        });
+
+        item.addEventListener("dragend", () => {
+          item.classList.remove("dragging");
+          session.dragFromSidebar = null;
+        });
+
+        // Touch drag from sidebar
+        item.addEventListener(
+          "touchstart",
+          () => {
+            session.dragFromSidebar = icon.id;
+            item.classList.add("dragging");
+          },
+          { passive: true },
+        );
+
+        item.addEventListener(
+          "touchmove",
+          (e) => {
+            if (session.dragFromSidebar === null) return;
+            e.preventDefault();
+          },
+          { passive: false },
+        );
+
+        item.addEventListener("touchend", (e) => {
+          if (session.dragFromSidebar === null) return;
+          item.classList.remove("dragging");
+
+          const touch = e.changedTouches[0];
+          const rect = canvas.getBoundingClientRect();
+
+          if (
+            touch.clientX >= rect.left &&
+            touch.clientX <= rect.right &&
+            touch.clientY >= rect.top &&
+            touch.clientY <= rect.bottom
+          ) {
+            placeIconAt(session.dragFromSidebar, {
+              x: touch.clientX - rect.left,
+              y: touch.clientY - rect.top,
+            });
+          }
+
+          session.dragFromSidebar = null;
+        });
+      }
+    }
+
+    /** Place a library icon on the table at a SCREEN position. */
+    function placeIconAt(iconId, screenPos) {
+      const icon = table.icons.find((i) => i.id === iconId);
+      const img = icon && imageCache.get(icon.src);
+      if (!img) return;
+      const v = view();
+      const world = toWorld(screenPos);
+      // Default footprint ≈ 64 screen px, preserving the icon's aspect.
+      const target = 64 / v.scale;
+      const scale = Math.min(target / img.width, target / img.height);
+      const w = img.width * scale;
+      const h = img.height * scale;
+      dispatch({
+        op: "piece.add",
+        piece: {
+          id: uid(),
+          iconId,
+          x: world.x - w / 2,
+          y: world.y - h / 2,
+          w,
+          h,
+        },
+      });
+    }
+
+    // Canvas drop zone for icons
+    canvas.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "copy";
+    });
+
+    canvas.addEventListener("drop", (e) => {
+      e.preventDefault();
+      if (session.dragFromSidebar === null) return;
+      const rect = canvas.getBoundingClientRect();
+      placeIconAt(session.dragFromSidebar, {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      });
+      session.dragFromSidebar = null;
+    });
+
+    // ============ CANVAS INTERACTION ============
+    function getMousePos(e) {
+      const rect = canvas.getBoundingClientRect();
+      return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    }
+
+    function getTouchPos(e) {
+      const rect = canvas.getBoundingClientRect();
+      const touch = e.touches[0] || e.changedTouches[0];
+      return { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
+    }
+
+    function getPieceAt(wx, wy) {
+      // Check in reverse order (top pieces first)
+      for (let i = table.pieces.length - 1; i >= 0; i--) {
+        const p = table.pieces[i];
+        if (wx >= p.x && wx <= p.x + p.w && wy >= p.y && wy <= p.y + p.h) {
+          return p;
+        }
+      }
+      return null;
+    }
+
+    function getResizeHandle(wx, wy, piece) {
+      if (!piece) return null;
+      const hs = 12 / view().scale;
+      const handles = [
+        { name: "nw", x: piece.x, y: piece.y },
+        { name: "ne", x: piece.x + piece.w, y: piece.y },
+        { name: "sw", x: piece.x, y: piece.y + piece.h },
+        { name: "se", x: piece.x + piece.w, y: piece.y + piece.h },
+      ];
+      for (const h of handles) {
+        if (Math.abs(wx - h.x) < hs && Math.abs(wy - h.y) < hs) return h.name;
+      }
+      return null;
+    }
+
+    function isOnDeleteButton(wx, wy, piece) {
+      if (!piece) return false;
+      const px = 1 / view().scale;
+      const btnX = piece.x + piece.w - 12 * px;
+      const btnY = piece.y + 12 * px;
+      return Math.sqrt((wx - btnX) ** 2 + (wy - btnY) ** 2) <= 12 * px;
+    }
+
+    // Throttled live streaming of piece drags to the room.
+    let lastPieceSend = 0;
+    function streamPieceUpdate(piece) {
+      const now = performance.now();
+      if (now - lastPieceSend < 80) return;
+      lastPieceSend = now;
+      netSend({
+        op: "piece.update",
+        id: piece.id,
+        x: piece.x,
+        y: piece.y,
+        w: piece.w,
+        h: piece.h,
+      });
+    }
+
+    function commitPieceUpdate(pieceId) {
+      const piece = table.pieces.find((p) => p.id === pieceId);
+      if (!piece) return;
+      // Final position: run through dispatch so it persists and syncs.
+      dispatch({
+        op: "piece.update",
+        id: piece.id,
+        x: piece.x,
+        y: piece.y,
+        w: piece.w,
+        h: piece.h,
+      });
+    }
+
+    let mouseIsDown = false;
+
+    canvas.addEventListener("mousedown", (e) => {
+      mouseIsDown = true;
+      handlePointerDown(toWorld(getMousePos(e)));
+    });
+
+    canvas.addEventListener("mousemove", (e) => {
+      const pos = toWorld(getMousePos(e));
+      // Only process drawing if mouse is actually held down
+      if (session.isDrawing && !mouseIsDown) {
+        session.isDrawing = false;
+        session.currentPath = null;
+        render();
+        return;
+      }
+      handlePointerMove(pos);
+    });
+
+    function finishDrawing() {
+      if (
+        session.mode === "draw" &&
+        session.currentPath &&
+        session.currentPath.points.length >= 2
+      ) {
+        // If shift held, make it a straight line
+        if (session.shiftHeld) {
+          const first = session.currentPath.points[0];
+          const last =
+            session.currentPath.points[session.currentPath.points.length - 1];
+          session.currentPath.points = [first, last];
+        }
+        const path = session.currentPath;
+        session.currentPath = null;
+        dispatch(
+          { op: "draw.add", path },
+          {
+            record: {
+              undo: [{ op: "draw.remove", ids: [path.id] }],
+              redo: [{ op: "draw.add", path }],
+            },
+          },
+        );
+      }
+      if (session.mode === "erase" && session.eraseBatch.length) {
+        const removed = session.eraseBatch;
+        session.eraseBatch = [];
+        // Ops already applied+sent per hit; record one undo entry per stroke.
+        undoStack.push({
+          undo: removed.map((path) => ({ op: "draw.add", path })),
+          redo: [{ op: "draw.remove", ids: removed.map((p) => p.id) }],
+        });
+        if (undoStack.length > UNDO_LIMIT) undoStack.shift();
+        redoStack.length = 0;
+        updateUndoButtons();
+      }
+      session.currentPath = null;
+      session.isDrawing = false;
+    }
+
+    function handlePointerUp() {
+      mouseIsDown = false;
+
+      // Piece drop
+      if (session.draggingPiece !== null || session.resizingPiece !== null) {
+        const id = session.draggingPiece ?? session.resizingPiece;
+        session.draggingPiece = null;
+        session.resizingPiece = null;
+        commitPieceUpdate(id);
+        render();
+      }
+
+      if (session.isDrawing || session.currentPath) {
+        finishDrawing();
+        render();
+      }
+    }
+
+    canvas.addEventListener("mouseup", handlePointerUp);
+    window.addEventListener("mouseup", handlePointerUp);
+
+    canvas.addEventListener("mouseleave", () => {
+      // Clear hover
+      if (session.hoveredPiece !== null) {
+        session.hoveredPiece = null;
+        render();
+      }
+
+      if (session.isDrawing && session.mode === "draw") {
+        finishDrawing();
+        render();
+      }
+      // Don't drop pieces on mouse leave - keep dragging
+    });
+
+    function eraseAt(wx, wy) {
+      const radius = 20 / view().scale;
+      const hit = table.drawings.filter((path) =>
+        path.points.some(
+          (pt) => Math.sqrt((pt.x - wx) ** 2 + (pt.y - wy) ** 2) < radius,
+        ),
+      );
+      if (!hit.length) return;
+      session.eraseBatch.push(...hit);
+      dispatch({ op: "draw.remove", ids: hit.map((p) => p.id) });
+    }
+
+    // ============ POINTER HANDLERS (world coords) ============
+    function handlePointerDown(pos) {
+      // Check hovered piece for delete button click
+      if (session.hoveredPiece !== null) {
+        const hovered = table.pieces.find(
+          (p) => p.id === session.hoveredPiece,
+        );
+        if (hovered && isOnDeleteButton(pos.x, pos.y, hovered)) {
+          session.hoveredPiece = null;
+          dispatch({ op: "piece.remove", id: hovered.id });
+          return true;
+        }
+
+        // Check resize handles on hovered piece
+        const handle = getResizeHandle(pos.x, pos.y, hovered);
+        if (handle) {
+          session.resizingPiece = hovered.id;
+          session.resizeHandle = handle;
+          session.dragOffset = { x: pos.x, y: pos.y };
+          raisePiece(hovered);
+          render();
+          return true;
+        }
+      }
+
+      // Check if clicking on a piece to drag
+      const clicked = getPieceAt(pos.x, pos.y);
+      if (clicked) {
+        session.draggingPiece = clicked.id;
+        session.hoveredPiece = clicked.id;
+        session.dragOffset = { x: pos.x - clicked.x, y: pos.y - clicked.y };
+        raisePiece(clicked);
+        render();
+        return true;
+      }
+
+      // Mode-specific actions
+      if (session.mode === "draw") {
+        session.isDrawing = true;
+        session.currentPath = {
+          id: uid(),
+          points: [pos],
+          color: session.drawColor,
+          width: session.drawWidth / view().scale,
+        };
+        return true;
+      }
+
+      if (session.mode === "erase") {
+        session.isDrawing = true;
+        session.eraseBatch = [];
+        eraseAt(pos.x, pos.y);
+        return true;
+      }
+
+      return false;
+    }
+
+    function raisePiece(piece) {
+      const index = table.pieces.indexOf(piece);
+      if (index !== -1) {
+        table.pieces.splice(index, 1);
+        table.pieces.push(piece);
+      }
+    }
+
+    function handlePointerMove(pos) {
+      // Piece dragging
+      if (session.draggingPiece !== null) {
+        const piece = table.pieces.find(
+          (p) => p.id === session.draggingPiece,
+        );
+        if (piece) {
+          piece.x = pos.x - session.dragOffset.x;
+          piece.y = pos.y - session.dragOffset.y;
+          streamPieceUpdate(piece);
+          render();
+        }
+        return;
+      }
+
+      // Piece resizing
+      if (session.resizingPiece !== null) {
+        const piece = table.pieces.find(
+          (p) => p.id === session.resizingPiece,
+        );
+        if (piece) {
+          const dx = pos.x - session.dragOffset.x;
+          const dy = pos.y - session.dragOffset.y;
+          const minSize = 20 / view().scale;
+
+          if (session.resizeHandle.includes("e")) {
+            piece.w = Math.max(minSize, piece.w + dx);
+          }
+          if (session.resizeHandle.includes("w")) {
+            const newW = Math.max(minSize, piece.w - dx);
+            piece.x += piece.w - newW;
+            piece.w = newW;
+          }
+          if (session.resizeHandle.includes("s")) {
+            piece.h = Math.max(minSize, piece.h + dy);
+          }
+          if (session.resizeHandle.includes("n")) {
+            const newH = Math.max(minSize, piece.h - dy);
+            piece.y += piece.h - newH;
+            piece.h = newH;
+          }
+
+          session.dragOffset = { x: pos.x, y: pos.y };
+          streamPieceUpdate(piece);
+          render();
+        }
+        return;
+      }
+
+      // Drawing
+      if (session.isDrawing) {
+        if (session.mode === "draw" && session.currentPath) {
+          session.currentPath.points.push(pos);
+          render();
+          return;
+        }
+
+        if (session.mode === "erase") {
+          eraseAt(pos.x, pos.y);
+          return;
+        }
+      }
+
+      // Hover detection for pieces
+      const hovered = getPieceAt(pos.x, pos.y);
+      const newHoveredId = hovered ? hovered.id : null;
+      if (session.hoveredPiece !== newHoveredId) {
+        session.hoveredPiece = newHoveredId;
+        render();
+      }
+    }
+
+    canvas.addEventListener(
+      "touchstart",
+      (e) => {
+        e.preventDefault();
+        const pos = toWorld(getTouchPos(e));
+        // Set hover for touch (since no mousemove before touch)
+        const touched = getPieceAt(pos.x, pos.y);
+        if (touched) {
+          session.hoveredPiece = touched.id;
+          render();
+        }
+        handlePointerDown(pos);
+      },
+      { passive: false },
+    );
+
+    canvas.addEventListener(
+      "touchmove",
+      (e) => {
+        e.preventDefault();
+        handlePointerMove(toWorld(getTouchPos(e)));
+      },
+      { passive: false },
+    );
+
+    canvas.addEventListener(
+      "touchend",
+      (e) => {
+        e.preventDefault();
+        handlePointerUp();
+      },
+      { passive: false },
+    );
+
+    canvas.addEventListener(
+      "touchcancel",
+      (e) => {
+        e.preventDefault();
+        handlePointerUp();
+      },
+      { passive: false },
+    );
+
+    window.addEventListener("touchend", handlePointerUp);
+
+    // ============ CLEAR DRAWINGS ============
+    clearBtn.addEventListener("click", () => {
+      if (table.drawings.length === 0) return;
+      const removed = table.drawings.slice();
+      dispatch(
+        { op: "draw.clear" },
+        {
+          record: {
+            undo: removed.map((path) => ({ op: "draw.add", path })),
+            redo: [{ op: "draw.clear" }],
+          },
+        },
+      );
+    });
+
+    // ============ MULTIPLAYER (dnd-sync rooms) ============
+    const net = {
+      ws: null,
+      room: null,
+      connected: false,
+      assembler: null,
+      retryDelay: 2000,
+      closedByUser: false,
+      peers: 0,
+    };
+
+    function randomRoomCode() {
+      const alphabet = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"; // no 0/O/1/I/L
+      const bytes = new Uint8Array(6);
+      crypto.getRandomValues(bytes);
+      return Array.from(bytes, (b) => alphabet[b % alphabet.length]).join("");
+    }
+
+    function roomFromHash() {
+      const match = location.hash.match(/room=([A-Za-z0-9-]{4,32})/);
+      return match ? match[1].toUpperCase() : null;
+    }
+
+    function joinRoom(code) {
+      net.room = code;
+      net.closedByUser = false;
+      net.retryDelay = 2000;
+      history.replaceState(null, "", "#room=" + code);
+      connect();
+      updateTableUI();
+    }
+
+    function leaveTable() {
+      net.closedByUser = true;
+      net.room = null;
+      if (net.ws) net.ws.close();
+      net.ws = null;
+      net.connected = false;
+      net.peers = 0;
+      history.replaceState(null, "", location.pathname + location.search);
+      updateTableUI();
+    }
+
+    function connect() {
+      if (!net.room) return;
+      const url = SYNC_SERVER.replace(/\/+$/, "") + "/room/" + net.room;
+      const ws = new WebSocket(url);
+      net.ws = ws;
+      net.assembler = new FrameAssembler();
+
+      ws.addEventListener("open", () => {
+        if (net.ws !== ws) return;
+        net.connected = true;
+        net.retryDelay = 2000;
+        ws.send(JSON.stringify({ t: "hello" }));
+        updateTableUI();
+      });
+
+      ws.addEventListener("message", async (e) => {
+        if (net.ws !== ws) return;
+        let msg;
+        try {
+          msg = net.assembler.feed(e.data);
+        } catch {
+          return;
+        }
+        if (msg === null) return;
+
+        if (msg.t === "snapshot") {
+          await onSnapshot(msg.state);
+        } else if (msg.t === "op" && msg.op) {
+          await applyRemote(msg.op);
+        } else if (msg.t === "peers") {
+          net.peers = msg.n;
+          updateTableUI();
+        }
+      });
+
+      ws.addEventListener("close", () => {
+        if (net.ws !== ws) return;
+        net.connected = false;
+        updateTableUI();
+        if (net.room && !net.closedByUser) {
+          setTimeout(connect, net.retryDelay);
+          net.retryDelay = Math.min(net.retryDelay * 2, 30000);
+        }
+      });
+    }
+
+    async function onSnapshot(remoteState) {
+      const remote = normalizeState(remoteState);
+      if (isEmptyState(remote) && !isEmptyState(table)) {
+        // Fresh room, existing local table: the starter seeds the room.
+        netSend({ op: "state.replace", state: table });
+        return;
+      }
+      // Otherwise the room is authoritative.
+      table = remote;
+      await ensureAssets();
+      renderIconList();
+      syncGridControls();
+      saveLocal();
+      render();
+    }
+
+    function netSend(op) {
+      if (!net.connected || !net.ws) return;
+      try {
+        for (const frame of encodeFrames({ t: "op", op })) {
+          net.ws.send(frame);
+        }
+      } catch {
+        // Connection is mid-close; the reconnect path resyncs via snapshot.
+      }
+    }
+
+    function updateTableUI() {
+      const online = net.room !== null;
+      tableOffline.classList.toggle("hidden", online);
+      tableOnline.classList.toggle("hidden", !online);
+      if (!online) {
+        if (!SYNC_CONFIGURED) {
+          startTableBtn.disabled = true;
+          syncHint.textContent =
+            "Shared tables need the sync server deployed (see workers/dnd-sync).";
+        }
+        return;
+      }
+      roomCodeLabel.textContent = net.room;
+      statusDot.className =
+        "status-dot " + (net.connected ? "live" : "connecting");
+      peersLabel.textContent = net.connected
+        ? net.peers +
+          " connected" +
+          (net.peers <= 1 ? " (share the link!)" : "")
+        : "reconnecting…";
+    }
+
+    startTableBtn.addEventListener("click", () => {
+      if (!SYNC_CONFIGURED) return;
+      joinRoom(randomRoomCode());
+    });
+
+    copyLinkBtn.addEventListener("click", async () => {
+      const link = location.origin + location.pathname + "#room=" + net.room;
+      try {
+        await navigator.clipboard.writeText(link);
+        copyLinkBtn.textContent = "Copied!";
+      } catch {
+        copyLinkBtn.textContent = link; // fallback: show it
+      }
+      setTimeout(() => (copyLinkBtn.textContent = "Copy invite link"), 1500);
+    });
+
+    leaveTableBtn.addEventListener("click", leaveTable);
+
+    // ============ PERSISTENCE ============
+    const STORAGE_KEY = "dndTabletopV2";
+    const LEGACY_KEY = "dndTabletop"; // pre-multiplayer saves, migrated on load
+
+    function saveLocal() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(table));
+      } catch {
+        // Quota exceeded (huge maps) — the table still works, it just
+        // won't survive a reload. Shared-table state lives server-side.
+      }
+    }
+
+    async function loadLocal() {
+      try {
+        const savedV2 = localStorage.getItem(STORAGE_KEY);
+        if (savedV2) {
+          table = normalizeState(JSON.parse(savedV2));
+        } else {
+          const legacy = localStorage.getItem(LEGACY_KEY);
+          if (legacy) table = normalizeState(JSON.parse(legacy));
+        }
+        await ensureAssets();
+        renderIconList();
+      } catch (e) {
+        console.error("Failed to load saved state:", e);
+        table = emptyState();
+      }
+    }
+
+    // ============ INIT ============
+    async function init() {
+      resizeCanvas();
+      await loadLocal();
+      syncGridControls();
+      updateCursor();
+      updateDrawSettingsVisibility();
+      updateUndoButtons();
+      updateTableUI();
+      render();
+
+      const hashRoom = roomFromHash();
+      if (hashRoom && SYNC_CONFIGURED) joinRoom(hashRoom);
+    }
+
+    init();
+  </script>
+</body>
+</html>

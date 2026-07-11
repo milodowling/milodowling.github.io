@@ -113,20 +113,23 @@ media:
 
 The portfolio entry/index pages resolve `r2:`-prefixed values via the helper.
 
-## Preserved `/dnd-tabletop/`
+## D&D section and `/dnd-tabletop/`
 
-The single-file virtual-tabletop tool at
-`_preserved-dnd-content/dnd-tabletop/index.html` is published verbatim at
-`/dnd-tabletop/`. This is a hard URL-preservation contract
-(`<shell-constraint-url-preservation-04>` in
-`contracts/ADC_001_SHELL_OVERVIEW.md`) — the URL was shared with friends
-before the rebuild and must keep serving.
+The virtual tabletop lives at `public/dnd-tabletop/` and serves standalone
+at `/dnd-tabletop/` — the URL shared with friends before the rebuild, kept
+serving deliberately (`contracts/ADC_006_DND_TABLETOP.md`). The 2026-07-10
+D&D ADC pass absorbed the previously frozen preserved copy as first-party
+source and added shared tables (live multiplayer), undo/redo, a grid
+overlay, session export/import, and icon naming.
 
-Implementation artifacts specifically supporting this preservation are
-flagged with `DND-PRESERVATION: remove when D&D ADC init pass lands` and
-enumerated in `adc_files/implementation/DND_PRESERVATION_ARTIFACTS.md`.
-The future D&D ADC pass will redesign the section and remove these
-artifacts cleanly.
+Multiplayer rooms are served by the `dnd-sync` Worker
+(`workers/dnd-sync/`, one Durable Object per room):
+
+- `npm run sync:dev` — local room server on :8787 (the tool auto-targets it
+  when served from localhost; e2e tests boot it automatically).
+- `npm run sync:deploy` — deploy to the personal Cloudflare account. After
+  the first deploy, stamp the Worker URL into the `SYNC_SERVER` constant in
+  `public/dnd-tabletop/index.html`.
 
 ## Repository layout
 
@@ -134,7 +137,7 @@ artifacts cleanly.
 contracts/              ADC contracts (source of truth)
 adc_files/              ADC workflow artifacts (audits, refinements, impl)
 docs/                   Original design-session inputs
-_preserved-dnd-content/ Read-only preserved D&D content
+workers/dnd-sync/       Room server for the D&D tabletop (Worker + DO)
 src/
   layouts/              ShellLayout.astro
   components/           Nav.astro, EngineSlot.jsx (Phase 2)
@@ -142,7 +145,7 @@ src/
   lib/                  r2.js, feed.js (Phase 3)
   styles/               baseline.css
   sections.config.js    The section manifest
-public/                 Static passthrough (build-managed)
+public/                 Static assets (incl. the D&D tabletop tool)
 ```
 
 ## Deploy (Cloudflare Pages)
