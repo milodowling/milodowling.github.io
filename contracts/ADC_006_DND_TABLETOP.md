@@ -3,10 +3,17 @@ contract_id: dnd-tabletop-adc-006
 title: "D&D Section — Virtual Tabletop with Shared Tables"
 author: "Milo Dowling"
 status: "active"
-version: 1.0
+version: 2.0
 created_date: "2026-07-10"
-last_updated: "2026-07-10"
+last_updated: "2026-07-12"
 ---
+
+> **v2.0 (2026-07-12, session 5):** the "v2 pass" per owner triage (see the website corpus
+> DECISIONS log, 2026-07-12). State moves to v3 (multi-map scenes); adds GM role via
+> capability link, fog of war, ephemeral presence (ping/ruler), token QoL (snap, labels,
+> rings, GM-hide), per-player camera (zoom/pan), image downscaling, and room-lifecycle
+> fixes. All op additions are tolerated as no-ops by older reducers; the Worker deploys
+> before or with the client so mixed versions degrade, never crash.
 
 # D&D Section — Virtual Tabletop
 
@@ -69,9 +76,19 @@ Architecture (owner decision 2026-07-10, memo in the website corpus):
 - **Authority:** the DO is authoritative. It applies every op through the
   SAME reducer the client uses, persists the result, and rebroadcasts the op
   to the other clients. Joiners send `hello` and receive `snapshot`.
-- **Seeding:** if a joiner's snapshot shows an empty room and the joiner has
-  local content, the joiner seeds the room with `state.replace` (this is the
-  host-creates-table flow).
+- **Seeding (changed in v2.0):** ONLY the client that clicked **Start shared
+  table** seeds an empty room with its local table (`state.replace`). A
+  client that arrives via a `#room=` link NEVER seeds — v1.0's
+  any-joiner-seeds heuristic could publish a guest's private solo table into
+  a friend's fresh room (observed in session-5 exploration).
+- **Roles:** see `<dnd-feature-roles-09>` — the starter claims the GM key;
+  the invite link stays the player link.
+- **Local persistence around rooms (changed in v2.0):** joining a room must
+  not clobber the solo table. Solo play persists under `dndTabletopV2`;
+  room state is mirrored under `dndRoomCache:<CODE>` (most-recent rooms
+  kept, older pruned). Leaving a room restores the solo table. The last
+  room (code + role key) is remembered so the offline panel can offer
+  **Rejoin last table**.
 - **Client server resolution:** `?sync=` query override (tests) → local
   `ws://127.0.0.1:8787` when the page is served from localhost →
   the deployed Worker URL baked into `SYNC_SERVER` in `index.html`. Until
@@ -96,28 +113,50 @@ Architecture (owner decision 2026-07-10, memo in the website corpus):
 
 `public/dnd-tabletop/reducer.js` is the single source of truth for the state
 shape and op vocabulary, imported by the page script, bundled into the
-Worker, and unit-tested directly. State shape (v2):
+Worker, and unit-tested directly. State shape (v3, multi-map):
 
 ```
-{ v: 2,
-  backdrop: null | { src, w, h },          // dataURL + natural pixels
-  grid:     { on, size },                   // world units
-  icons:    [{ id, name, src }],            // library
-  pieces:   [{ id, iconId, x, y, w, h }],   // placed tokens
-  drawings: [{ id, points, color, width }] }
+{ v: 3,
+  icons: [{ id, name, src }],               // room-wide token library
+  activeMap: <mapId>,                       // the map everyone is looking at
+  maps: [{                                   // ≥1 always (normalize guarantees)
+    id, name,
+    backdrop: null | { src, w, h },          // dataURL + natural pixels
+    grid:     { on, size },                  // world units
+    pieces:   [{ id, iconId, x, y, w, h,
+                 label?, ring?, hidden? }],   // placed tokens (QoL fields opt.)
+    drawings: [{ id, points, color, width }],
+    fog:      [{ id, points, revealed }] }]   // fog patches (closed polygons)
+}
 ```
 
-**World coordinates (load-bearing):** every coordinate in the state is in
-WORLD space — the backdrop's natural pixel space, or `DEFAULT_WORLD`
-(1920×1080) with no backdrop. Clients map world→screen with a local
-fit-contain view transform. This is what makes one table render consistently
-on every screen; never store screen pixels in the state.
+**World coordinates (load-bearing, unchanged):** every coordinate in the
+state is in WORLD space — the map backdrop's natural pixel space, or
+`DEFAULT_WORLD` (1920×1080) with no backdrop, PER MAP. Clients map
+world→screen with a local view transform (fit-contain composed with the
+per-player camera, `<dnd-feature-view-camera-07>`). Never store screen
+pixels in the state.
 
-Ops: `backdrop.set`, `grid.set`, `icon.add/remove/rename`,
-`piece.add/update/remove`, `draw.add/remove/clear`, `state.replace`.
+Ops (map-scoped content ops carry `map: <mapId>`; when absent they target
+the active map — tolerance for older senders):
+
+- `backdrop.set`, `grid.set` — per map
+- `icon.add/remove/rename` — room-wide (`icon.remove` cascades pieces on all maps)
+- `piece.add/update/remove` — `add`/`update` accept the QoL fields:
+  `label` (string ≤ 40), `ring` (CSS color string ≤ 24 or null), `hidden` (bool)
+- `draw.add/remove/clear` — per map
+- `fog.add` (patch: id + ≥3 world points), `fog.set` (id + revealed bool),
+  `fog.remove` (id), `fog.clear` — per map, GM-gated (see `<dnd-feature-roles-09>`)
+- `map.add` ({ id, name } → empty map), `map.rename`, `map.remove` (last map
+  survives: removing the final map is a no-op; removing the active map
+  activates another), `map.switch` (sets `activeMap`) — GM-gated
+- `state.replace` — whole-table swap through `normalizeState`
+
 Semantics the tests pin down: adds are idempotent per id; ops referencing
-missing ids are tolerated no-ops (concurrent-delete races must not throw);
-`normalizeState` coerces arbitrary input (imports, snapshots, v1 saves).
+missing ids/maps are tolerated no-ops (concurrent-delete races must not
+throw); unknown ops are no-ops (load-bearing for mixed-version rollout);
+`normalizeState` coerces arbitrary input and migrates v1 (pre-multiplayer)
+and v2 (single-map) saves — a v2 table becomes `maps[0]` ("Map 1").
 
 **Parity:**
 - **Implementation Scope:** `public/dnd-tabletop/reducer.js`
@@ -129,12 +168,31 @@ missing ids are tolerated no-ops (concurrent-delete races must not throw);
 ### [Implementation: Wire protocol + chunking] <dnd-impl-sync-protocol-03>
 
 `public/dnd-tabletop/sync-protocol.js`, shared client/Worker. Logical JSON
-messages (`hello`, `snapshot`, `op`, `peers`) are split into `chunk` frames
-when they exceed ~500k chars, because Workers cap WebSocket messages at
-1 MiB and table states carry image dataURLs. `FrameAssembler` reassembles,
-tolerating interleaved senders and duplicate frames. Server-side, image
-blobs are stored chunked under the DO's 2 MiB value cap, and are only
-rewritten by the ops that change them (a token move never rewrites the map).
+messages are split into `chunk` frames when they exceed ~500k chars, because
+Workers cap WebSocket messages at 1 MiB and table states carry image
+dataURLs. `FrameAssembler` reassembles, tolerating interleaved senders and
+duplicate frames. Server-side, image blobs are stored chunked under the
+DO's 2 MiB value cap, keyed per map (`blob:backdrop:<mapId>`) and per icon,
+and are only rewritten by the ops that change them (a token move never
+rewrites the map).
+
+Message vocabulary (v2.0):
+
+- `{t:"hello", claimGm?, gmKey?, name?}` client → server. `claimGm: true`
+  claims the GM role for a fresh room (first claim wins); `gmKey` presents
+  an existing key.
+- `{t:"snapshot", state, role, gmKey?}` server → client. `role` is
+  `"gm" | "player"`; `gmKey` is included only on a successful claim/present.
+- `{t:"op", op}` either direction — one reducer op.
+- `{t:"peers", n}` server → client.
+- `{t:"ephemeral", kind, ...payload, name, color}` either direction —
+  presence traffic (`kind: "ping" | "ruler"`). NEVER persisted, NEVER
+  reduced: the Worker relays to the other sockets verbatim. Clients ignore
+  unknown `kind`s; pre-v2.0 Workers ignore unknown `t`s — both directions
+  degrade silently.
+
+Unknown message types and unknown op types are tolerated no-ops everywhere;
+that tolerance is the rollout mechanism (Worker deploys first).
 
 **Parity:**
 - **Implementation Scope:** `public/dnd-tabletop/sync-protocol.js`,
@@ -170,6 +228,151 @@ corner-sampling background detection has been in the tool since preservation.
 - **Tests:**
   - undo + grid sync paths in `tests/dnd/multiplayer.e2e.js`;
     reducer semantics in `tests/dnd/reducer.spec.js`
+
+---
+
+### [Feature: Per-player camera — zoom/pan] <dnd-feature-view-camera-07>
+
+The view transform composes fit-contain with a per-player camera: wheel
+zooms to the cursor, middle/right-drag (or space+drag) pans, two-finger
+touch pans, pinch zooms, and a reset control (⟲) restores auto-fit. The
+camera is LOCAL ONLY — never synced, never in state (the v1.0
+world-coordinate bet exists precisely so this touches only the view layer).
+Zoom clamps to [fit, 8×fit]. Map switch and backdrop change reset the
+camera. Single-pointer interactions (draw, drag, resize) are unchanged.
+
+**Parity:**
+- **Implementation Scope:** view/camera section of `public/dnd-tabletop/index.html`
+- **Tests:** camera math exercised implicitly by every e2e canvas assertion;
+  zoom/pan e2e in `tests/dnd/multiplayer.e2e.js` (pixel proof after zoom)
+
+---
+
+### [Feature: Presence — named ping and shared ruler] <dnd-feature-presence-08>
+
+Each participant has a display name (asked once in the Table panel, stored
+in `localStorage.dndPlayerName`) and a deterministic color (hash of name
+over a fixed palette). Two presence gestures, both carried as `ephemeral`
+messages (never state, never history):
+
+- **Ping** — dedicated Point mode (drag streams a fading colored trail with
+  a name tag), plus double-click/double-tap in any mode for a one-shot
+  ping pulse. Peers render pings above everything; a ping outside the
+  current viewport draws an edge arrow pointing toward it.
+- **Ruler** — Measure mode: drag shows a line labeled in grid squares and
+  feet (Chebyshev / D&D 5e diagonals; raw world px when the grid is off),
+  streamed to peers while measuring, gone on release.
+
+**Parity:**
+- **Implementation Scope:** presence section of `public/dnd-tabletop/index.html`,
+  ephemeral relay in `workers/dnd-sync/src/index.js`
+- **Tests:** ephemeral relay + ping render in `tests/dnd/multiplayer.e2e.js`
+
+---
+
+### [Feature: GM role via capability link] <dnd-feature-roles-09>
+
+No accounts (unchanged). The **Start shared table** client sends
+`claimGm: true`; the DO mints a `gmKey` (first claim wins), returns it, and
+the client persists it (per-room, localStorage) and appends `&gm=<key>` to
+its own URL — that URL is the GM link, re-usable across devices. The plain
+`#room=` invite stays the player link.
+
+Trust model (owner decision 2026-07-12): the DEFAULT stays
+everything-editable-by-everyone (friends table). The Worker enforces
+GM-gating only where the game breaks otherwise: `fog.*` and `map.*` ops
+from non-GM sockets are dropped, and the `hidden` field is stripped from
+non-GM piece ops. Concealment (fog fill, hidden tokens) is CLIENT-SIDE
+rendering — a devtools-literate player can peek; accepted and documented
+for the friends-table species. Destructive room-wide actions (import,
+clear) get a confirm dialog for everyone.
+
+**Parity:**
+- **Implementation Scope:** role handling in `workers/dnd-sync/src/index.js`,
+  Table panel + gating in `public/dnd-tabletop/index.html`
+- **Tests:** GM claim + non-GM fog-op drop in `tests/dnd/multiplayer.e2e.js`
+
+---
+
+### [Feature: Fog of war] <dnd-feature-fog-10>
+
+Owlbear-style static "paper fog", GM-only: in Fog mode the GM drags a Box
+(or Brush freehand) patch over a region; clicking a patch toggles
+`revealed`. Players render unrevealed fog as near-opaque ink; the GM sees
+it at ~45% with a dashed outline (revealed patches: faint outline only, so
+they can be re-hidden). Fog is per map, part of shared state
+(`fog.add/set/remove/clear`), and survives undo history untouched (fog is
+not in the drawing undo stack). Walls/vision/dynamic lighting are
+explicitly OUT of species (research + owner sign-off).
+
+**Parity:**
+- **Implementation Scope:** fog section of `public/dnd-tabletop/index.html`,
+  reducer `fog.*` ops
+- **Tests:** reducer units (`tests/dnd/reducer.spec.js`); fog sync + player
+  opacity in `tests/dnd/multiplayer.e2e.js`
+
+---
+
+### [Feature: Token QoL — snap, labels, rings, GM-hide] <dnd-feature-token-qol-11>
+
+- **Snap-to-grid:** when the grid is on, a dropped/dragged piece snaps its
+  center to the nearest cell center on release (Alt bypasses). Resize is
+  not snapped.
+- **Label:** free text ≤ 40 chars under the token (players use it for
+  HP/conditions/emoji per the research); edited via the piece editor
+  (double-click a piece, or its ✎ badge while hovered).
+- **Ring:** optional colored halo ring around the piece (small fixed
+  palette + none).
+- **GM-hide:** GM-only eye toggle; hidden pieces render ghosted for the GM
+  and not at all for players (client-side concealment per the trust model).
+- **Grid calibration:** a **Fit grid** affordance in the Backdrop panel —
+  drag a box over one map square and the grid size snaps to it; grid line
+  color auto-adapts to backdrop luminance (dark lines on light maps).
+
+**Parity:**
+- **Implementation Scope:** `public/dnd-tabletop/index.html`, reducer piece
+  fields
+- **Tests:** reducer units (label/ring/hidden coercion); label + snap sync
+  in `tests/dnd/multiplayer.e2e.js`
+
+---
+
+### [Feature: Multi-map scenes] <dnd-feature-scenes-12>
+
+One room holds many maps (owner pulled this into v2 over the defer
+recommendation, 2026-07-12). The Maps sidebar panel lists the room's maps;
+the GM adds (empty), renames, deletes, and switches the live map
+(`map.switch` → everyone follows `activeMap`). Every map keeps its own
+backdrop, grid, drawings, pieces, and fog; the icon library is room-wide.
+Solo (no room) users get the same panel ungated. The Worker stores each
+map's backdrop blob under `blob:backdrop:<mapId>` so switching maps never
+rewrites images.
+
+**Parity:**
+- **Implementation Scope:** maps section of `public/dnd-tabletop/index.html`,
+  reducer `map.*` ops + v3 state, Worker blob keys
+- **Tests:** reducer units (map ops, v2→v3 migration); map-switch sync in
+  `tests/dnd/multiplayer.e2e.js`
+
+---
+
+### [Feature: Image robustness] <dnd-feature-robustness-13>
+
+- **Client-side downscale on upload:** backdrops re-encoded to fit
+  2560px max dimension (JPEG q0.85); icons to 512px PNG (after the
+  existing background-trim). A session-5 probe showed a raw 7.6 MB phone
+  photo syncs fine but silently exceeds the localStorage quota.
+- **Quota surfacing:** when the local save fails, a one-per-session toast
+  says the table won't survive a reload locally and suggests Export (in a
+  room, the server copy is unaffected).
+- **Save debounce:** `saveLocal` coalesces (~400 ms trailing) so streamed
+  remote drags don't re-serialize a multi-MB state per frame.
+
+**Parity:**
+- **Implementation Scope:** upload + persistence paths in
+  `public/dnd-tabletop/index.html`
+- **Tests:** downscale dimensions asserted in `tests/dnd/multiplayer.e2e.js`
+  (uploaded oversize image arrives ≤ cap on the peer)
 
 ---
 
@@ -211,10 +414,16 @@ input. — `tests/dnd/sync-protocol.spec.js`
 
 ### [TestScenario: Multiplayer end-to-end] <dnd-test-multiplayer-04>
 
-Two real browser contexts + a real `wrangler dev` room server: host starts a
-table, guest joins by link, drawings/undo/icons/renames/tokens/grid/backdrop
-sync in both directions, and a third latecomer context receives the complete
-table from the snapshot. — `tests/dnd/multiplayer.e2e.js`
+Real browser contexts + a real `wrangler dev` room server: host starts a
+table (and becomes GM), guest joins by link, drawings/undo/icons/renames/
+tokens/grid/backdrop sync in both directions, and a latecomer context
+receives the complete table from the snapshot. v2.0 extends the same suite:
+fog patches sync and render near-opaque for players; a non-GM fog op is
+dropped by the Worker; map add/switch moves every client; piece labels and
+snap positions sync; a ping renders on the peer; an oversized upload
+arrives downscaled. Assertions read each client's table via the
+`window.__dndTable` debug hook (the localStorage mirror moved to per-room
+keys in v2.0). — `tests/dnd/multiplayer.e2e.js`
 
 ---
 

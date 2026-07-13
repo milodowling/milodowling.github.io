@@ -1,4 +1,5 @@
-// ADC-IMPLEMENTS: <dnd-impl-sync-worker-04>
+// ADC-IMPLEMENTS: <dnd-impl-sync-worker-04> <dnd-feature-roles-09>
+// ADC-IMPLEMENTS: <dnd-feature-presence-08>
 //
 // dnd-sync Worker — realtime room server for the D&D tabletop.
 // See contracts/ADC_006_DND_TABLETOP.md (<dnd-feature-multiplayer-02>).
@@ -8,12 +9,23 @@
 // the client uses, persists the result, and rebroadcasts the op to the
 // other connected clients. Late joiners get a full snapshot. Uses the
 // WebSocket Hibernation API so idle rooms cost nothing; state is lazily
-// reloaded from DO storage after hibernation.
+// reloaded from DO storage after hibernation, and each socket's role
+// survives hibernation via serializeAttachment.
+//
+// Roles: the first client to claim (`hello.claimGm`) mints the room's
+// gmKey; presenting the key on hello re-grants GM on any device. GM-gated
+// ops (`fog.*`, `map.*`) from non-GM sockets are dropped, and the `hidden`
+// token field is stripped from non-GM piece ops. Everything else stays
+// everyone-editable by design (friends table).
+//
+// Ephemeral messages (pings, rulers) are relayed to the other sockets
+// verbatim — never reduced, never persisted.
 //
 // Storage layout (SQLite-backed KV, 2 MiB value cap):
+//   gmKey                  the room's GM capability key
 //   doc                    state JSON with image srcs stripped (small,
 //                          rewritten on every op)
-//   blob:backdrop:*        backdrop dataURL, chunked
+//   blob:backdrop:<mapId>:*  per-map backdrop dataURL, chunked
 //   blob:icon:<id>:*       icon dataURL, chunked
 // Blobs are only rewritten by the ops that change them, so a token move
 // never rewrites a multi-MB map image.
@@ -70,6 +82,14 @@ export class TableRoom {
     return new Response(null, { status: 101, webSocket: client });
   }
 
+  isGm(ws) {
+    try {
+      return !!ws.deserializeAttachment()?.gm;
+    } catch {
+      return false;
+    }
+  }
+
   async webSocketMessage(ws, raw) {
     if (typeof raw !== "string") return; // protocol is JSON text frames
 
@@ -92,18 +112,53 @@ export class TableRoom {
 
     if (message.t === "hello") {
       await this.ensureState();
-      this.sendTo(ws, { t: "snapshot", state: this.state });
+      const grant = await this.resolveRole(message);
+      ws.serializeAttachment({ gm: grant.gm });
+      this.sendTo(ws, {
+        t: "snapshot",
+        state: this.state,
+        role: grant.gm ? "gm" : "player",
+        ...(grant.gm ? { gmKey: grant.gmKey } : {}),
+      });
+      return;
+    }
+
+    if (message.t === "ephemeral") {
+      // Presence traffic: relay, never reduce, never persist.
+      for (const peer of this.ctx.getWebSockets()) {
+        if (peer !== ws) this.sendTo(peer, message);
+      }
       return;
     }
 
     if (message.t === "op" && message.op) {
+      const op = message.op;
+      const gm = this.isGm(ws);
+      if (!gm) {
+        // GM-gated vocabulary: fog and map management.
+        if (/^(fog|map)\./.test(op.op)) return;
+        // Players can't hide/unhide tokens.
+        if (op.op === "piece.add" && op.piece) delete op.piece.hidden;
+        if (op.op === "piece.update") delete op.hidden;
+      }
       await this.ensureState();
-      applyOp(this.state, message.op);
-      await this.persist(message.op);
+      applyOp(this.state, op);
+      await this.persist(op);
       for (const peer of this.ctx.getWebSockets()) {
-        if (peer !== ws) this.sendTo(peer, message);
+        if (peer !== ws) this.sendTo(peer, { t: "op", op });
       }
     }
+  }
+
+  async resolveRole(hello) {
+    let gmKey = await this.ctx.storage.get("gmKey");
+    if (hello.claimGm && !gmKey) {
+      gmKey = crypto.randomUUID().replaceAll("-", "");
+      await this.ctx.storage.put("gmKey", gmKey);
+      return { gm: true, gmKey };
+    }
+    if (gmKey && hello.gmKey === gmKey) return { gm: true, gmKey };
+    return { gm: false };
   }
 
   webSocketClose(ws) {
@@ -146,9 +201,10 @@ export class TableRoom {
       return;
     }
     const state = normalizeState(JSON.parse(doc));
-    if (state.backdrop) {
-      state.backdrop.src = await this.getBlob("blob:backdrop");
-      if (!state.backdrop.src) state.backdrop = null;
+    for (const map of state.maps) {
+      if (!map.backdrop) continue;
+      map.backdrop.src = await this.getBlob("blob:backdrop:" + map.id);
+      if (!map.backdrop.src) map.backdrop = null;
     }
     for (const icon of [...state.icons]) {
       icon.src = await this.getBlob("blob:icon:" + icon.id);
@@ -159,10 +215,15 @@ export class TableRoom {
 
   async persist(op) {
     switch (op.op) {
-      case "backdrop.set":
-        if (op.src) await this.putBlob("blob:backdrop", op.src);
-        else await this.deleteBlob("blob:backdrop");
+      case "backdrop.set": {
+        // Same resolution the reducer used: explicit map, else active. A
+        // ghost map id means the reducer no-oped — don't orphan a blob.
+        const mapId = op.map ?? this.state.activeMap;
+        if (!this.state.maps.some((m) => m.id === mapId)) break;
+        if (op.src) await this.putBlob("blob:backdrop:" + mapId, op.src);
+        else await this.deleteBlob("blob:backdrop:" + mapId);
         break;
+      }
       case "icon.add":
         if (op.icon && op.icon.id) {
           await this.putBlob("blob:icon:" + op.icon.id, op.icon.src);
@@ -171,10 +232,18 @@ export class TableRoom {
       case "icon.remove":
         await this.deleteBlob("blob:icon:" + op.id);
         break;
+      case "map.remove":
+        // Only if the reducer actually removed it (the last map survives).
+        if (!this.state.maps.some((m) => m.id === op.id)) {
+          await this.deleteBlob("blob:backdrop:" + op.id);
+        }
+        break;
       case "state.replace": {
         await this.deleteBlobPrefix("blob:");
-        if (this.state.backdrop) {
-          await this.putBlob("blob:backdrop", this.state.backdrop.src);
+        for (const map of this.state.maps) {
+          if (map.backdrop) {
+            await this.putBlob("blob:backdrop:" + map.id, map.backdrop.src);
+          }
         }
         for (const icon of this.state.icons) {
           await this.putBlob("blob:icon:" + icon.id, icon.src);
@@ -188,9 +257,12 @@ export class TableRoom {
     // The doc (everything except image srcs) is small; rewrite it every op.
     const doc = {
       ...this.state,
-      backdrop: this.state.backdrop
-        ? { w: this.state.backdrop.w, h: this.state.backdrop.h, src: "blob" }
-        : null,
+      maps: this.state.maps.map((map) => ({
+        ...map,
+        backdrop: map.backdrop
+          ? { w: map.backdrop.w, h: map.backdrop.h, src: "blob" }
+          : null,
+      })),
       icons: this.state.icons.map(({ id, name }) => ({ id, name, src: "blob" })),
     };
     await this.ctx.storage.put("doc", JSON.stringify(doc));

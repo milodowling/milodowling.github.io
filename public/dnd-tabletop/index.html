@@ -39,6 +39,107 @@
       height: 100%;
     }
 
+    /* Reset-view overlay button */
+    .view-reset {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: #1a1a2ecc;
+      border: 1px solid #c9a95966;
+      color: #e8dcc4;
+      border-radius: 4px;
+      padding: 6px 10px;
+      font-size: 13px;
+      cursor: pointer;
+      display: none;
+    }
+
+    .view-reset:hover {
+      border-color: #c9a959;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      background: #2a2a4e;
+      border: 1px solid #c9a959;
+      color: #e8dcc4;
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      max-width: 70vw;
+      z-index: 30;
+      display: none;
+    }
+
+    /* Piece editor popover */
+    .piece-editor {
+      position: absolute;
+      background: #16213e;
+      border: 1px solid #c9a959;
+      border-radius: 6px;
+      padding: 10px;
+      z-index: 20;
+      display: none;
+      width: 190px;
+    }
+
+    .piece-editor input[type="text"] {
+      width: 100%;
+      background: #1a1a2e;
+      border: 1px solid #3a3a5e;
+      color: #e8dcc4;
+      border-radius: 3px;
+      font-size: 12px;
+      padding: 4px 6px;
+      margin-bottom: 8px;
+    }
+
+    .piece-editor .ring-swatches {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 8px;
+    }
+
+    .ring-swatch {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid #3a3a5e;
+    }
+
+    .ring-swatch.none {
+      background:
+        linear-gradient(to top right, transparent 44%, #aa4444 46%, #aa4444 54%, transparent 56%),
+        #1a1a2e;
+    }
+
+    .ring-swatch.active {
+      border-color: #c9a959;
+    }
+
+    .piece-editor .editor-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #a89a7a;
+    }
+
+    .piece-editor .editor-row button {
+      background: #2a2a4e;
+      border: 1px solid #3a3a5e;
+      color: #e8dcc4;
+      padding: 3px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
     /* Sidebar */
     .sidebar {
       width: 200px;
@@ -126,7 +227,7 @@
       text-align: center;
     }
 
-    /* Draw Settings */
+    /* Draw / fog settings */
     .draw-settings {
       margin-top: 10px;
       padding-top: 10px;
@@ -252,6 +353,32 @@
       letter-spacing: 1px;
     }
 
+    .role-badge {
+      background: #c9a959;
+      color: #1a1a2e;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 3px;
+      padding: 1px 5px;
+      letter-spacing: 1px;
+    }
+
+    .name-input {
+      width: 100%;
+      background: #2a2a4e;
+      border: 1px solid #3a3a5e;
+      color: #e8dcc4;
+      border-radius: 3px;
+      padding: 6px 8px;
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+
+    .name-input:focus {
+      border-color: #c9a959;
+      outline: none;
+    }
+
     /* Grid controls */
     .grid-row {
       display: flex;
@@ -273,6 +400,92 @@
       border-radius: 3px;
       padding: 3px 5px;
       font-size: 12px;
+    }
+
+    .grid-row .mini-btn {
+      background: #2a2a4e;
+      border: 1px solid #3a3a5e;
+      color: #a89a7a;
+      border-radius: 3px;
+      padding: 3px 7px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .grid-row .mini-btn:hover,
+    .grid-row .mini-btn.active {
+      border-color: #c9a959;
+      color: #e8dcc4;
+    }
+
+    /* Maps list */
+    .map-list {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-top: 8px;
+    }
+
+    .map-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 7px;
+      background: #2a2a4e;
+      border: 1px solid #3a3a5e;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      color: #a89a7a;
+    }
+
+    .map-item:hover {
+      border-color: #c9a959;
+    }
+
+    .map-item.active {
+      border-color: #c9a959;
+      color: #e8dcc4;
+      background: #3a4a5e;
+    }
+
+    .map-item .map-name {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .map-item input.map-name-input {
+      flex: 1;
+      min-width: 0;
+      background: #1a1a2e;
+      border: 1px solid #c9a959;
+      color: #e8dcc4;
+      border-radius: 3px;
+      font-size: 12px;
+      padding: 2px 4px;
+    }
+
+    .map-rename,
+    .map-delete {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 1px 3px;
+      font-size: 12px;
+      border-radius: 2px;
+      color: #6a6a8a;
+    }
+
+    .map-rename:hover {
+      color: #c9a959;
+      background: #1a1a2e;
+    }
+
+    .map-delete:hover {
+      color: #aa6a6a;
+      background: #3a2a2a;
     }
 
     /* Icon Library */
@@ -414,22 +627,42 @@
   <div class="app">
     <div class="canvas-container">
       <canvas id="mainCanvas"></canvas>
+      <button class="view-reset" id="viewResetBtn" title="Reset view">⟲ Fit</button>
+      <div class="piece-editor" id="pieceEditor">
+        <input type="text" id="pieceLabelInput" maxlength="40" placeholder="Label (HP, condition…)">
+        <div class="ring-swatches" id="ringSwatches">
+          <div class="ring-swatch none" data-ring="" title="No ring"></div>
+          <div class="ring-swatch" data-ring="#cc3333" style="background:#cc3333"></div>
+          <div class="ring-swatch" data-ring="#33aa33" style="background:#33aa33"></div>
+          <div class="ring-swatch" data-ring="#3366cc" style="background:#3366cc"></div>
+          <div class="ring-swatch" data-ring="#ccaa33" style="background:#ccaa33"></div>
+          <div class="ring-swatch" data-ring="#ffffff" style="background:#ffffff"></div>
+        </div>
+        <div class="editor-row">
+          <label id="pieceHideRow"><input type="checkbox" id="pieceHideToggle"> Hidden</label>
+          <button id="pieceEditorDone">Done</button>
+        </div>
+      </div>
     </div>
 
     <div class="sidebar">
       <div class="sidebar-section">
         <h3>Table</h3>
+        <input type="text" class="name-input" id="playerNameInput" maxlength="24" placeholder="Your name">
         <div id="tableOffline">
           <button class="upload-btn" id="startTableBtn">Start shared table</button>
+          <button class="upload-btn hidden" id="rejoinTableBtn"></button>
           <div class="draw-hint" id="syncHint">Play with friends: start a table, share the link.</div>
         </div>
         <div id="tableOnline" class="hidden">
           <div class="table-status">
             <span class="status-dot" id="statusDot"></span>
             <span id="peersLabel">connecting…</span>
+            <span class="role-badge hidden" id="roleBadge">GM</span>
           </div>
           <div class="table-status">room <span class="room-code" id="roomCodeLabel"></span></div>
           <button class="upload-btn" id="copyLinkBtn">Copy invite link</button>
+          <button class="upload-btn hidden" id="copyGmLinkBtn">Copy GM link</button>
           <button class="mode-btn clear-btn" id="leaveTableBtn">Leave table</button>
         </div>
       </div>
@@ -439,7 +672,10 @@
         <div class="mode-buttons">
           <button class="mode-btn active" data-mode="draw">Draw</button>
           <button class="mode-btn" data-mode="erase">Erase</button>
-          <button class="mode-btn clear-btn" id="clearDrawings">Clear</button>
+          <button class="mode-btn" data-mode="point">Point</button>
+          <button class="mode-btn" data-mode="measure">Measure</button>
+          <button class="mode-btn" data-mode="fog" id="fogModeBtn">Fog</button>
+          <button class="mode-btn clear-btn" id="clearDrawings">Clear drawings</button>
         </div>
         <div class="undo-row">
           <button class="mode-btn" id="undoBtn" title="Undo drawing (Ctrl/Cmd+Z)">↩ Undo</button>
@@ -458,18 +694,37 @@
             <button class="thickness-btn active" data-width="4">Med</button>
             <button class="thickness-btn" data-width="8">Thick</button>
           </div>
-          <div class="draw-hint">Hold Shift for straight lines</div>
+          <div class="draw-hint">Hold Shift for straight lines · double-click to ping</div>
+        </div>
+        <div class="draw-settings hidden" id="fogSettings">
+          <div class="draw-thickness">
+            <button class="thickness-btn active" data-fogtool="box">Box</button>
+            <button class="thickness-btn" data-fogtool="brush">Brush</button>
+          </div>
+          <div class="draw-hint">Drag to cover · click a patch to reveal/hide · Alt-click removes</div>
+          <button class="mode-btn clear-btn" id="clearFog">Clear fog</button>
+        </div>
+        <div class="draw-settings hidden" id="measureSettings">
+          <div class="draw-hint">Drag to measure. Squares count D&D-style (diagonals = 1).</div>
         </div>
       </div>
 
       <div class="sidebar-section">
         <h3>Backdrop</h3>
         <button class="upload-btn" id="backdropBtn">Upload Backdrop</button>
-        <input type="file" id="backdropInput" class="hidden" accept="image/png,image/jpeg">
+        <input type="file" id="backdropInput" class="hidden" accept="image/png,image/jpeg,image/webp">
         <div class="grid-row" style="margin-top:10px">
           <label><input type="checkbox" id="gridToggle"> Grid</label>
           <input type="number" id="gridSize" min="8" max="4096" step="1" title="Grid size (map pixels)">
+          <button class="mini-btn" id="fitGridBtn" title="Drag a box over one map square to size the grid">Fit</button>
         </div>
+      </div>
+
+      <div class="sidebar-section">
+        <h3>Maps</h3>
+        <button class="upload-btn" id="addMapBtn">+ Add map</button>
+        <div class="map-list" id="mapList"></div>
+        <div class="draw-hint hidden" id="mapsHint">The GM switches maps.</div>
       </div>
 
       <div class="sidebar-section">
@@ -490,10 +745,14 @@
       </div>
     </div>
   </div>
+  <div class="toast" id="toast"></div>
 
   <script type="module">
     // ADC-IMPLEMENTS: <dnd-feature-tool-route-01> <dnd-feature-multiplayer-02>
-    // ADC-IMPLEMENTS: <dnd-feature-table-features-05>
+    // ADC-IMPLEMENTS: <dnd-feature-table-features-05> <dnd-feature-view-camera-07>
+    // ADC-IMPLEMENTS: <dnd-feature-presence-08> <dnd-feature-roles-09>
+    // ADC-IMPLEMENTS: <dnd-feature-fog-10> <dnd-feature-token-qol-11>
+    // ADC-IMPLEMENTS: <dnd-feature-scenes-12> <dnd-feature-robustness-13>
     //
     // All table state lives in `table` (shape defined in ./reducer.js) and
     // every mutation is an op sent through dispatch(). In a shared table the
@@ -501,25 +760,25 @@
     // other clients — see contracts/ADC_006_DND_TABLETOP.md.
     //
     // Coordinates in `table` are WORLD coordinates (backdrop natural pixels,
-    // or DEFAULT_WORLD when no backdrop is set). The view transform maps
-    // world to the local canvas; interaction chrome (handles, delete button,
-    // erase radius) is sized in screen pixels and divided by the view scale
-    // so it feels identical on any screen.
+    // or DEFAULT_WORLD when no backdrop is set — per map). The view
+    // transform (fit-contain composed with the LOCAL per-player camera) maps
+    // world to the canvas; interaction chrome (handles, delete button, erase
+    // radius) is sized in screen pixels and divided by the view scale so it
+    // feels identical at any zoom on any screen. The camera is never synced.
     import {
       emptyState,
       applyOp,
       normalizeState,
       isEmptyState,
       worldSize,
+      activeMapOf,
     } from "./reducer.js";
     import { encodeFrames, FrameAssembler } from "./sync-protocol.js";
 
     // ============ SYNC SERVER ============
     // Resolution order: explicit ?sync= override (used by tests), local
     // wrangler dev when the page itself is served from localhost, else the
-    // deployed dnd-sync Worker. The production URL is stamped at deploy
-    // time; until then the Start button explains itself and everything
-    // else — solo play, saves, export — works without a server.
+    // deployed dnd-sync Worker.
     const SYNC_SERVER = (() => {
       const q = new URLSearchParams(location.search).get("sync");
       if (q) return q;
@@ -533,21 +792,38 @@
     // ============ STATE ============
     let table = emptyState();
 
+    /** The map everyone is looking at — all content ops target it. */
+    function am() {
+      return activeMapOf(table);
+    }
+
     // Ephemeral interaction state — never synced, never persisted.
     const session = {
       mode: "draw",
       drawColor: "#cc3333",
       drawWidth: 4, // screen px at draw time; stored per-path in world units
+      fogTool: "box",
       shiftHeld: false,
+      altHeld: false,
+      spaceHeld: false,
       isDrawing: false,
-      currentPath: null, // world coords
+      currentPath: null, // world coords (draw mode)
+      fogDraft: null, // { points } world coords (fog mode)
+      measure: null, // { x1, y1, x2, y2 } world coords (measure mode)
+      calibrating: false, // "Fit grid" drag in progress-or-armed
+      calibrateStart: null,
       eraseBatch: [], // paths removed during one erase stroke (for undo)
       hoveredPiece: null, // piece id
       draggingPiece: null,
+      dragMoved: false, // did the current piece drag actually move?
       resizingPiece: null,
       resizeHandle: null,
       dragOffset: { x: 0, y: 0 }, // world
       dragFromSidebar: null, // icon id
+      panning: null, // { sx, sy, ox, oy } screen-space pan drag
+      pinch: null, // two-finger gesture bookkeeping
+      editingPiece: null, // piece id shown in the editor popover
+      quotaWarned: false,
     };
 
     const undoStack = []; // { undo: [ops], redo: [ops] } — drawings only
@@ -555,6 +831,7 @@
     const UNDO_LIMIT = 100;
 
     const imageCache = new Map(); // src -> HTMLImageElement
+    const lumaCache = new Map(); // src -> average luminance 0..255
 
     function uid() {
       const bytes = new Uint8Array(8);
@@ -567,31 +844,83 @@
     const ctx = canvas.getContext("2d");
     const canvasContainer = document.querySelector(".canvas-container");
     const modeButtons = document.querySelectorAll(".mode-btn[data-mode]");
+    const fogModeBtn = document.getElementById("fogModeBtn");
     const clearBtn = document.getElementById("clearDrawings");
+    const clearFogBtn = document.getElementById("clearFog");
     const undoBtn = document.getElementById("undoBtn");
     const redoBtn = document.getElementById("redoBtn");
     const backdropBtn = document.getElementById("backdropBtn");
     const backdropInput = document.getElementById("backdropInput");
     const gridToggle = document.getElementById("gridToggle");
     const gridSizeInput = document.getElementById("gridSize");
+    const fitGridBtn = document.getElementById("fitGridBtn");
     const exportBtn = document.getElementById("exportBtn");
     const importBtn = document.getElementById("importBtn");
     const importInput = document.getElementById("importInput");
     const iconBtn = document.getElementById("iconBtn");
     const iconInput = document.getElementById("iconInput");
     const iconList = document.getElementById("iconList");
+    const mapList = document.getElementById("mapList");
+    const mapsHint = document.getElementById("mapsHint");
+    const addMapBtn = document.getElementById("addMapBtn");
     const drawSettings = document.getElementById("drawSettings");
+    const fogSettings = document.getElementById("fogSettings");
+    const measureSettings = document.getElementById("measureSettings");
     const colorSwatches = document.querySelectorAll(".color-swatch");
-    const thicknessButtons = document.querySelectorAll(".thickness-btn");
+    const thicknessButtons = document.querySelectorAll(".thickness-btn[data-width]");
+    const fogToolButtons = document.querySelectorAll(".thickness-btn[data-fogtool]");
     const startTableBtn = document.getElementById("startTableBtn");
+    const rejoinTableBtn = document.getElementById("rejoinTableBtn");
     const syncHint = document.getElementById("syncHint");
     const tableOffline = document.getElementById("tableOffline");
     const tableOnline = document.getElementById("tableOnline");
     const statusDot = document.getElementById("statusDot");
     const peersLabel = document.getElementById("peersLabel");
+    const roleBadge = document.getElementById("roleBadge");
     const roomCodeLabel = document.getElementById("roomCodeLabel");
     const copyLinkBtn = document.getElementById("copyLinkBtn");
+    const copyGmLinkBtn = document.getElementById("copyGmLinkBtn");
     const leaveTableBtn = document.getElementById("leaveTableBtn");
+    const playerNameInput = document.getElementById("playerNameInput");
+    const viewResetBtn = document.getElementById("viewResetBtn");
+    const toastEl = document.getElementById("toast");
+    const pieceEditor = document.getElementById("pieceEditor");
+    const pieceLabelInput = document.getElementById("pieceLabelInput");
+    const pieceHideRow = document.getElementById("pieceHideRow");
+    const pieceHideToggle = document.getElementById("pieceHideToggle");
+    const pieceEditorDone = document.getElementById("pieceEditorDone");
+    const ringSwatches = document.getElementById("ringSwatches");
+
+    // ============ TOAST ============
+    let toastTimer = null;
+    function toast(message) {
+      toastEl.textContent = message;
+      toastEl.style.display = "block";
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => (toastEl.style.display = "none"), 6000);
+    }
+
+    // ============ PLAYER IDENTITY (presence) ============
+    const NAME_KEY = "dndPlayerName";
+    const PRESENCE_PALETTE = [
+      "#e05252", "#4f8fd9", "#43a366", "#d9a43f",
+      "#b06fd9", "#3fbdb0", "#d97b3f", "#8fa3ff",
+    ];
+
+    function playerName() {
+      return (playerNameInput.value || "").trim() || "Player";
+    }
+
+    function nameColor(name) {
+      let h = 0;
+      for (const c of name) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+      return PRESENCE_PALETTE[h % PRESENCE_PALETTE.length];
+    }
+
+    playerNameInput.value = localStorage.getItem(NAME_KEY) || "";
+    playerNameInput.addEventListener("change", () => {
+      localStorage.setItem(NAME_KEY, playerNameInput.value.trim());
+    });
 
     // ============ CANVAS SETUP ============
     function resizeCanvas() {
@@ -603,8 +932,12 @@
 
     window.addEventListener("resize", resizeCanvas);
 
-    // ============ VIEW TRANSFORM (world <-> screen) ============
-    function view() {
+    // ============ VIEW TRANSFORM (world <-> screen, per-player camera) ============
+    // cam === null means auto-fit (the v1 behavior). Zoom/pan set an explicit
+    // {scale, ox, oy}; reset (⟲, map switch, backdrop change) returns to fit.
+    let cam = null;
+
+    function fitView() {
       const wsz = worldSize(table);
       const scale = Math.min(canvas.width / wsz.w, canvas.height / wsz.h) || 1;
       return {
@@ -615,9 +948,76 @@
       };
     }
 
+    function view() {
+      if (!cam) return fitView();
+      return { ...cam, wsz: worldSize(table) };
+    }
+
     function toWorld(p) {
       const v = view();
       return { x: (p.x - v.ox) / v.scale, y: (p.y - v.oy) / v.scale };
+    }
+
+    function resetCamera() {
+      cam = null;
+      updateViewResetBtn();
+      render();
+    }
+
+    function updateViewResetBtn() {
+      viewResetBtn.style.display = cam ? "block" : "none";
+    }
+
+    viewResetBtn.addEventListener("click", resetCamera);
+
+    /** Zoom around a screen point, clamped to [fit, 8×fit]. */
+    function zoomAt(screenPoint, factor) {
+      const fit = fitView();
+      const current = view();
+      const scale = Math.min(
+        fit.scale * 8,
+        Math.max(fit.scale, current.scale * factor),
+      );
+      const k = scale / current.scale;
+      cam = {
+        scale,
+        ox: screenPoint.x - (screenPoint.x - current.ox) * k,
+        oy: screenPoint.y - (screenPoint.y - current.oy) * k,
+      };
+      if (Math.abs(scale - fit.scale) < 1e-9) cam = null; // back at fit
+      updateViewResetBtn();
+      render();
+    }
+
+    function panBy(dx, dy) {
+      const current = view();
+      cam = { scale: current.scale, ox: current.ox + dx, oy: current.oy + dy };
+      updateViewResetBtn();
+      render();
+    }
+
+    canvas.addEventListener(
+      "wheel",
+      (e) => {
+        e.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        const point = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+        if (e.ctrlKey) {
+          // Trackpad pinch arrives as ctrl+wheel.
+          zoomAt(point, Math.exp(-e.deltaY * 0.01));
+        } else {
+          zoomAt(point, e.deltaY < 0 ? 1.15 : 1 / 1.15);
+        }
+      },
+      { passive: false },
+    );
+
+    canvas.addEventListener("contextmenu", (e) => e.preventDefault());
+
+    // ============ ROLES ============
+    /** GM powers apply solo/offline and to the GM socket in a room. */
+    function canGm() {
+      return net.room === null || net.role === "gm";
     }
 
     // ============ RENDERING ============
@@ -625,45 +1025,83 @@
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+      const map = am();
       const v = view();
       ctx.setTransform(v.scale, 0, 0, v.scale, v.ox, v.oy);
       const px = 1 / v.scale; // one screen pixel, in world units
 
       // World bounds (subtle frame when no backdrop, so the table reads)
-      if (!table.backdrop) {
+      if (!map.backdrop) {
         ctx.strokeStyle = "#2a2a4e";
         ctx.lineWidth = 2 * px;
         ctx.strokeRect(0, 0, v.wsz.w, v.wsz.h);
       }
 
       // Backdrop
-      if (table.backdrop) {
-        const img = imageCache.get(table.backdrop.src);
+      if (map.backdrop) {
+        const img = imageCache.get(map.backdrop.src);
         if (img) ctx.drawImage(img, 0, 0, v.wsz.w, v.wsz.h);
       }
 
-      // Grid overlay
-      if (table.grid.on) {
-        ctx.strokeStyle = "rgba(201, 169, 89, 0.28)";
+      // Grid overlay (line color adapts to backdrop luminance)
+      if (map.grid.on) {
+        ctx.strokeStyle = gridColor(map);
         ctx.lineWidth = px;
         ctx.beginPath();
-        for (let x = table.grid.size; x < v.wsz.w; x += table.grid.size) {
+        for (let x = map.grid.size; x < v.wsz.w; x += map.grid.size) {
           ctx.moveTo(x, 0);
           ctx.lineTo(x, v.wsz.h);
         }
-        for (let y = table.grid.size; y < v.wsz.h; y += table.grid.size) {
+        for (let y = map.grid.size; y < v.wsz.h; y += map.grid.size) {
           ctx.moveTo(0, y);
           ctx.lineTo(v.wsz.w, y);
         }
         ctx.stroke();
       }
 
+      // Drawings (under pieces so tokens stand on the markings)
+      for (const path of map.drawings) {
+        strokePath(path);
+      }
+      if (session.currentPath && session.currentPath.points.length >= 2) {
+        strokePath(session.currentPath);
+      }
+
       // Placed pieces
-      for (const piece of table.pieces) {
+      for (const piece of map.pieces) {
+        if (piece.hidden && !canGm()) continue;
         const icon = table.icons.find((i) => i.id === piece.iconId);
         const img = icon && imageCache.get(icon.src);
         if (!img) continue;
+
+        ctx.globalAlpha = piece.hidden ? 0.45 : 1;
+        if (piece.ring) {
+          ctx.strokeStyle = piece.ring;
+          ctx.lineWidth = 3 * px;
+          ctx.beginPath();
+          ctx.ellipse(
+            piece.x + piece.w / 2,
+            piece.y + piece.h / 2,
+            piece.w / 2 + 4 * px,
+            piece.h / 2 + 4 * px,
+            0,
+            0,
+            Math.PI * 2,
+          );
+          ctx.stroke();
+        }
         ctx.drawImage(img, piece.x, piece.y, piece.w, piece.h);
+        if (piece.hidden) {
+          ctx.font = `${12 * px}px sans-serif`;
+          ctx.textAlign = "left";
+          ctx.textBaseline = "top";
+          ctx.fillText("👁", piece.x + 2 * px, piece.y + 2 * px);
+        }
+        ctx.globalAlpha = 1;
+
+        if (piece.label) {
+          drawPieceLabel(piece, px);
+        }
 
         const isActive =
           session.hoveredPiece === piece.id ||
@@ -704,18 +1142,91 @@
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
           ctx.fillText("×", delX, delY);
+
+          // Edit (✎) button next to it — opens the label/ring editor.
+          const editX = delX - 24 * px;
+          ctx.fillStyle = "#3a4a5e";
+          ctx.beginPath();
+          ctx.arc(editX, delY, 10 * px, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = "#e8dcc4";
+          ctx.font = `${11 * px}px sans-serif`;
+          ctx.fillText("✎", editX, delY);
         }
       }
 
-      // Drawings
-      for (const path of table.drawings) {
-        strokePath(path);
+      // Fog of war (players: near-opaque; GM: translucent + outlines)
+      const gm = canGm();
+      for (const patch of map.fog) {
+        if (!patch.revealed) {
+          ctx.fillStyle = gm ? "rgba(13, 13, 26, 0.45)" : "rgba(13, 13, 26, 0.96)";
+          fillPolygon(patch.points);
+          if (gm) strokePolygon(patch.points, "rgba(201, 169, 89, 0.7)", px);
+        } else if (gm && session.mode === "fog") {
+          strokePolygon(patch.points, "rgba(201, 169, 89, 0.3)", px);
+        }
       }
-      if (session.currentPath && session.currentPath.points.length >= 2) {
-        strokePath(session.currentPath);
+      if (session.fogDraft && session.fogDraft.points.length >= 2) {
+        strokePolygon(session.fogDraft.points, "rgba(201, 169, 89, 0.9)", px);
       }
 
+      // Grid-calibration draft box
+      if (session.calibrateStart && session.calibrateEnd) {
+        const a = session.calibrateStart;
+        const b = session.calibrateEnd;
+        ctx.strokeStyle = "#c9a959";
+        ctx.setLineDash([6 * px, 4 * px]);
+        ctx.lineWidth = 2 * px;
+        ctx.strokeRect(
+          Math.min(a.x, b.x),
+          Math.min(a.y, b.y),
+          Math.abs(b.x - a.x),
+          Math.abs(b.y - a.y),
+        );
+        ctx.setLineDash([]);
+      }
+
+      // Presence overlays (pings, rulers) — screen-constant sizing.
+      renderPresence(px);
+
       ctx.setTransform(1, 0, 0, 1, 0, 0);
+    }
+
+    function drawPieceLabel(piece, px) {
+      const text = piece.label;
+      const size = 12 * px;
+      ctx.font = `600 ${size}px -apple-system, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      const cx = piece.x + piece.w / 2;
+      const ty = piece.y + piece.h + 4 * px;
+      const w = ctx.measureText(text).width;
+      ctx.fillStyle = "rgba(13, 13, 26, 0.75)";
+      ctx.fillRect(cx - w / 2 - 4 * px, ty - 2 * px, w + 8 * px, size + 5 * px);
+      ctx.fillStyle = "#e8dcc4";
+      ctx.fillText(text, cx, ty);
+    }
+
+    function fillPolygon(points) {
+      if (points.length < 3) return;
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].y);
+      for (let i = 1; i < points.length; i++) ctx.lineTo(points[i].x, points[i].y);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function strokePolygon(points, style, px) {
+      if (points.length < 2) return;
+      ctx.strokeStyle = style;
+      ctx.lineWidth = 1.5 * px;
+      ctx.setLineDash([6 * px, 4 * px]);
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].y);
+      for (let i = 1; i < points.length; i++) ctx.lineTo(points[i].x, points[i].y);
+      ctx.closePath();
+      ctx.stroke();
+      ctx.setLineDash([]);
     }
 
     function strokePath(path) {
@@ -730,6 +1241,13 @@
         ctx.lineTo(path.points[i].x, path.points[i].y);
       }
       ctx.stroke();
+    }
+
+    function gridColor(map) {
+      if (!map.backdrop) return "rgba(201, 169, 89, 0.28)";
+      const luma = lumaCache.get(map.backdrop.src);
+      if (luma !== undefined && luma > 140) return "rgba(30, 30, 45, 0.45)";
+      return "rgba(201, 169, 89, 0.35)";
     }
 
     // ============ IMAGE LOADING ============
@@ -749,20 +1267,72 @@
       });
     }
 
+    /** Average luminance of an image (16×16 sample), for grid contrast. */
+    function computeLuma(src) {
+      if (lumaCache.has(src)) return;
+      const img = imageCache.get(src);
+      if (!img) return;
+      const c = document.createElement("canvas");
+      c.width = 16;
+      c.height = 16;
+      const g = c.getContext("2d");
+      g.drawImage(img, 0, 0, 16, 16);
+      const data = g.getImageData(0, 0, 16, 16).data;
+      let sum = 0;
+      for (let i = 0; i < data.length; i += 4) {
+        sum += 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+      }
+      lumaCache.set(src, sum / (data.length / 4));
+    }
+
     /** Ensure every image referenced by the current table is decoded. */
     async function ensureAssets() {
       const jobs = [];
-      if (table.backdrop) jobs.push(loadImage(table.backdrop.src));
+      for (const map of table.maps) {
+        if (map.backdrop) jobs.push(loadImage(map.backdrop.src));
+      }
       for (const icon of table.icons) jobs.push(loadImage(icon.src));
       await Promise.all(jobs);
-      // v1-migrated backdrops carry no natural size; fill it in once.
-      if (table.backdrop && !table.backdrop.w) {
-        const img = imageCache.get(table.backdrop.src);
-        if (img) {
-          table.backdrop.w = img.naturalWidth;
-          table.backdrop.h = img.naturalHeight;
+      for (const map of table.maps) {
+        // v1-migrated backdrops carry no natural size; fill it in once.
+        if (map.backdrop && !map.backdrop.w) {
+          const img = imageCache.get(map.backdrop.src);
+          if (img) {
+            map.backdrop.w = img.naturalWidth;
+            map.backdrop.h = img.naturalHeight;
+          }
         }
+        if (map.backdrop) computeLuma(map.backdrop.src);
       }
+    }
+
+    // ============ IMAGE DOWNSCALING ============
+    // Big uploads sync fine (chunked) but blow the localStorage quota and
+    // slow every join; cap them at upload time instead.
+    const BACKDROP_MAX = 2560;
+    const ICON_MAX = 512;
+
+    function downscaleDataUrl(dataUrl, maxDim, mime, quality) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          const scale = maxDim / Math.max(img.width, img.height);
+          // Already small enough (in pixels AND bytes): keep the original —
+          // re-encoding pixel-art PNG maps to JPEG would only degrade them.
+          if (scale >= 1 && dataUrl.length < 2_000_000) {
+            resolve(dataUrl);
+            return;
+          }
+          const c = document.createElement("canvas");
+          c.width = Math.max(1, Math.round(img.width * Math.min(1, scale)));
+          c.height = Math.max(1, Math.round(img.height * Math.min(1, scale)));
+          const g = c.getContext("2d");
+          g.drawImage(img, 0, 0, c.width, c.height);
+          resolve(c.toDataURL(mime || "image/png", quality));
+        };
+        img.onerror = () => resolve(dataUrl);
+        img.src = dataUrl;
+      });
     }
 
     // ============ REMOVE BACKGROUND AND TRIM ============
@@ -913,6 +1483,7 @@
       }
       saveLocal();
       render();
+      renderMapList();
       updateUndoButtons();
       if (send) netSend(op);
     }
@@ -920,8 +1491,10 @@
     /** Apply an op that arrived from the room. */
     async function applyRemote(op) {
       applyOp(table, op);
+      if (op.op === "map.switch" || op.op === "backdrop.set") resetCamera();
       await ensureAssets();
       renderIconList();
+      renderMapList();
       syncGridControls();
       saveLocal();
       render();
@@ -966,28 +1539,48 @@
     });
 
     // ============ MODE SWITCHING ============
+    function setMode(mode) {
+      session.mode = mode;
+      session.calibrating = false;
+      fitGridBtn.classList.remove("active");
+      modeButtons.forEach((b) =>
+        b.classList.toggle("active", b.dataset.mode === mode),
+      );
+      updateModePanels();
+      updateCursor();
+      render();
+    }
+
     modeButtons.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        session.mode = btn.dataset.mode;
-        modeButtons.forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
-        updateDrawSettingsVisibility();
-        updateCursor();
-        render();
-      });
+      btn.addEventListener("click", () => setMode(btn.dataset.mode));
     });
 
-    function updateDrawSettingsVisibility() {
+    function updateModePanels() {
       drawSettings.style.display = session.mode === "draw" ? "block" : "none";
+      fogSettings.style.display = session.mode === "fog" ? "block" : "none";
+      measureSettings.style.display =
+        session.mode === "measure" ? "block" : "none";
     }
 
     function updateCursor() {
       canvas.className = "";
-      if (session.mode === "draw" || session.mode === "erase") {
-        canvas.classList.add("cursor-crosshair");
-      } else {
+      if (session.spaceHeld || session.panning) {
+        canvas.classList.add(session.panning ? "cursor-grabbing" : "cursor-grab");
+      } else if (session.mode === "point") {
         canvas.classList.add("cursor-pointer");
+      } else {
+        canvas.classList.add("cursor-crosshair");
       }
+    }
+
+    /** Fog is GM/solo-only; hide the mode when this client can't use it. */
+    function updateGmUI() {
+      const gm = canGm();
+      fogModeBtn.style.display = gm ? "" : "none";
+      addMapBtn.style.display = gm ? "" : "none";
+      mapsHint.classList.toggle("hidden", gm);
+      pieceHideRow.style.display = gm ? "" : "none";
+      if (!gm && session.mode === "fog") setMode("draw");
     }
 
     // ============ DRAW SETTINGS ============
@@ -1007,12 +1600,31 @@
       });
     });
 
-    // Shift key tracking
+    fogToolButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        fogToolButtons.forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        session.fogTool = btn.dataset.fogtool;
+      });
+    });
+
+    // Modifier key tracking
     document.addEventListener("keydown", (e) => {
       if (e.key === "Shift") session.shiftHeld = true;
+      if (e.key === "Alt") session.altHeld = true;
+      if (e.key === " " && e.target === document.body) {
+        session.spaceHeld = true;
+        updateCursor();
+        e.preventDefault();
+      }
     });
     document.addEventListener("keyup", (e) => {
       if (e.key === "Shift") session.shiftHeld = false;
+      if (e.key === "Alt") session.altHeld = false;
+      if (e.key === " ") {
+        session.spaceHeld = false;
+        updateCursor();
+      }
     });
 
     // ============ BACKDROP ============
@@ -1024,15 +1636,24 @@
 
       const reader = new FileReader();
       reader.onload = async (event) => {
-        const src = event.target.result;
+        // Downscale to the cap: big photos sync but break local saves.
+        const src = await downscaleDataUrl(
+          event.target.result,
+          BACKDROP_MAX,
+          "image/jpeg",
+          0.85,
+        );
         const img = await loadImage(src);
         if (!img) return;
+        resetCamera();
         dispatch({
           op: "backdrop.set",
+          map: am().id,
           src,
           w: img.naturalWidth,
           h: img.naturalHeight,
         });
+        computeLuma(src);
       };
       reader.readAsDataURL(file);
       e.target.value = "";
@@ -1040,22 +1661,32 @@
 
     // ============ GRID ============
     function syncGridControls() {
-      gridToggle.checked = table.grid.on;
+      gridToggle.checked = am().grid.on;
       if (document.activeElement !== gridSizeInput) {
-        gridSizeInput.value = table.grid.size;
+        gridSizeInput.value = am().grid.size;
       }
     }
 
     function dispatchGrid() {
       dispatch({
         op: "grid.set",
+        map: am().id,
         on: gridToggle.checked,
-        size: Number(gridSizeInput.value) || table.grid.size,
+        size: Number(gridSizeInput.value) || am().grid.size,
       });
     }
 
     gridToggle.addEventListener("change", dispatchGrid);
     gridSizeInput.addEventListener("change", dispatchGrid);
+
+    // "Fit grid": drag a box over one map square; its size becomes the grid.
+    fitGridBtn.addEventListener("click", () => {
+      session.calibrating = !session.calibrating;
+      fitGridBtn.classList.toggle("active", session.calibrating);
+      if (session.calibrating) {
+        toast("Drag a box over one map square to size the grid.");
+      }
+    });
 
     // ============ SESSION EXPORT / IMPORT ============
     exportBtn.addEventListener("click", () => {
@@ -1083,14 +1714,106 @@
         } catch {
           return;
         }
+        // Import replaces the whole table — and the whole room, if shared.
+        const scope = net.room ? "the whole shared table" : "your table";
+        if (!isEmptyState(table) && !confirm(`Importing replaces ${scope}. Continue?`)) {
+          return;
+        }
         dispatch({ op: "state.replace", state: parsed });
         await ensureAssets();
         renderIconList();
+        renderMapList();
         syncGridControls();
+        resetCamera();
         render();
       };
       reader.readAsText(file);
       e.target.value = "";
+    });
+
+    // ============ MAPS (scenes) ============
+    function renderMapList() {
+      mapList.innerHTML = "";
+      const gm = canGm();
+      for (const map of table.maps) {
+        const item = document.createElement("div");
+        item.className = "map-item" + (map.id === am().id ? " active" : "");
+
+        const name = document.createElement("span");
+        name.className = "map-name";
+        name.textContent = map.name;
+        name.title = map.name;
+        item.appendChild(name);
+
+        if (gm) {
+          const rename = document.createElement("button");
+          rename.className = "map-rename";
+          rename.textContent = "✎";
+          rename.title = "Rename map";
+          const del = document.createElement("button");
+          del.className = "map-delete";
+          del.textContent = "×";
+          del.title = "Delete map";
+          item.append(rename, del);
+
+          rename.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const input = document.createElement("input");
+            input.className = "map-name-input";
+            input.value = map.name;
+            input.maxLength = 60;
+            name.replaceWith(input);
+            input.focus();
+            input.select();
+            let done = false;
+            const commit = () => {
+              if (done) return;
+              done = true;
+              const value = input.value.trim();
+              if (value && value !== map.name) {
+                dispatch({ op: "map.rename", id: map.id, name: value });
+              }
+              renderMapList();
+            };
+            input.addEventListener("blur", commit);
+            input.addEventListener("keydown", (ev) => {
+              ev.stopPropagation();
+              if (ev.key === "Enter") commit();
+              if (ev.key === "Escape") {
+                done = true;
+                renderMapList();
+              }
+            });
+            input.addEventListener("click", (ev) => ev.stopPropagation());
+          });
+
+          del.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (table.maps.length <= 1) return;
+            const hasContent =
+              map.backdrop || map.pieces.length || map.drawings.length;
+            if (hasContent && !confirm(`Delete map "${map.name}"?`)) return;
+            dispatch({ op: "map.remove", id: map.id });
+          });
+        }
+
+        item.addEventListener("click", () => {
+          if (!gm || map.id === am().id) return;
+          resetCamera();
+          dispatch({ op: "map.switch", id: map.id });
+          syncGridControls();
+        });
+
+        mapList.appendChild(item);
+      }
+    }
+
+    addMapBtn.addEventListener("click", () => {
+      const id = uid();
+      dispatch({ op: "map.add", map: { id, name: "Map " + (table.maps.length + 1) } });
+      resetCamera();
+      dispatch({ op: "map.switch", id });
+      syncGridControls();
     });
 
     // ============ ICON LIBRARY ============
@@ -1101,8 +1824,9 @@
       files.forEach((file) => {
         const reader = new FileReader();
         reader.onload = async (event) => {
-          // Remove background and trim PNG icons
-          const processed = await removeBackgroundAndTrim(event.target.result);
+          // Remove background and trim PNG icons, then cap their size.
+          const trimmed = await removeBackgroundAndTrim(event.target.result);
+          const processed = await downscaleDataUrl(trimmed, ICON_MAX);
           await loadImage(processed);
           const name = (file.name || "Icon")
             .replace(/\.[^.]+$/, "")
@@ -1255,6 +1979,20 @@
       }
     }
 
+    // ============ SNAP-TO-GRID ============
+    /** Snap a piece's center to the nearest cell center (Alt bypasses). */
+    function maybeSnapPiece(piece) {
+      const grid = am().grid;
+      if (!grid.on || session.altHeld) return;
+      const size = grid.size;
+      const cx = piece.x + piece.w / 2;
+      const cy = piece.y + piece.h / 2;
+      const snappedCx = (Math.floor(cx / size) + 0.5) * size;
+      const snappedCy = (Math.floor(cy / size) + 0.5) * size;
+      piece.x = snappedCx - piece.w / 2;
+      piece.y = snappedCy - piece.h / 2;
+    }
+
     /** Place a library icon on the table at a SCREEN position. */
     function placeIconAt(iconId, screenPos) {
       const icon = table.icons.find((i) => i.id === iconId);
@@ -1267,17 +2005,16 @@
       const scale = Math.min(target / img.width, target / img.height);
       const w = img.width * scale;
       const h = img.height * scale;
-      dispatch({
-        op: "piece.add",
-        piece: {
-          id: uid(),
-          iconId,
-          x: world.x - w / 2,
-          y: world.y - h / 2,
-          w,
-          h,
-        },
-      });
+      const piece = {
+        id: uid(),
+        iconId,
+        x: world.x - w / 2,
+        y: world.y - h / 2,
+        w,
+        h,
+      };
+      maybeSnapPiece(piece);
+      dispatch({ op: "piece.add", map: am().id, piece });
     }
 
     // Canvas drop zone for icons
@@ -1297,22 +2034,98 @@
       session.dragFromSidebar = null;
     });
 
+    // ============ PIECE EDITOR (label / ring / hide) ============
+    function openPieceEditor(piece) {
+      session.editingPiece = piece.id;
+      pieceLabelInput.value = piece.label || "";
+      pieceHideToggle.checked = !!piece.hidden;
+      for (const s of ringSwatches.children) {
+        s.classList.toggle("active", (piece.ring || "") === s.dataset.ring);
+      }
+      const v = view();
+      const rect = canvasContainer.getBoundingClientRect();
+      const left = Math.min(
+        rect.width - 200,
+        Math.max(6, piece.x * v.scale + v.ox),
+      );
+      const top = Math.min(
+        rect.height - 130,
+        Math.max(6, (piece.y + piece.h) * v.scale + v.oy + 8),
+      );
+      pieceEditor.style.left = left + "px";
+      pieceEditor.style.top = top + "px";
+      pieceEditor.style.display = "block";
+      pieceLabelInput.focus();
+    }
+
+    function closePieceEditor(commit = true) {
+      if (commit && session.editingPiece) {
+        const piece = am().pieces.find((p) => p.id === session.editingPiece);
+        if (piece) {
+          const label = pieceLabelInput.value.trim();
+          if ((piece.label || "") !== label) {
+            dispatch({
+              op: "piece.update",
+              map: am().id,
+              id: piece.id,
+              label,
+            });
+          }
+        }
+      }
+      session.editingPiece = null;
+      pieceEditor.style.display = "none";
+    }
+
+    pieceEditorDone.addEventListener("click", () => closePieceEditor());
+    pieceLabelInput.addEventListener("keydown", (e) => {
+      e.stopPropagation();
+      if (e.key === "Enter") closePieceEditor();
+      if (e.key === "Escape") closePieceEditor(false);
+    });
+
+    ringSwatches.addEventListener("click", (e) => {
+      const swatch = e.target.closest(".ring-swatch");
+      if (!swatch || !session.editingPiece) return;
+      for (const s of ringSwatches.children) s.classList.remove("active");
+      swatch.classList.add("active");
+      dispatch({
+        op: "piece.update",
+        map: am().id,
+        id: session.editingPiece,
+        ring: swatch.dataset.ring || null,
+      });
+    });
+
+    pieceHideToggle.addEventListener("change", () => {
+      if (!session.editingPiece) return;
+      dispatch({
+        op: "piece.update",
+        map: am().id,
+        id: session.editingPiece,
+        hidden: pieceHideToggle.checked,
+      });
+    });
+
     // ============ CANVAS INTERACTION ============
     function getMousePos(e) {
       const rect = canvas.getBoundingClientRect();
       return { x: e.clientX - rect.left, y: e.clientY - rect.top };
     }
 
-    function getTouchPos(e) {
+    function getTouchPos(e, index = 0) {
       const rect = canvas.getBoundingClientRect();
-      const touch = e.touches[0] || e.changedTouches[0];
+      const touch = e.touches[index] || e.changedTouches[0];
       return { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
     }
 
     function getPieceAt(wx, wy) {
+      const gm = canGm();
       // Check in reverse order (top pieces first)
-      for (let i = table.pieces.length - 1; i >= 0; i--) {
-        const p = table.pieces[i];
+      const pieces = am().pieces;
+      for (let i = pieces.length - 1; i >= 0; i--) {
+        const p = pieces[i];
+        if (p.hidden && !gm) continue; // players can't grab what they can't see
         if (wx >= p.x && wx <= p.x + p.w && wy >= p.y && wy <= p.y + p.h) {
           return p;
         }
@@ -1343,6 +2156,39 @@
       return Math.sqrt((wx - btnX) ** 2 + (wy - btnY) ** 2) <= 12 * px;
     }
 
+    function isOnEditButton(wx, wy, piece) {
+      if (!piece) return false;
+      const px = 1 / view().scale;
+      const btnX = piece.x + piece.w - 36 * px;
+      const btnY = piece.y + 12 * px;
+      return Math.sqrt((wx - btnX) ** 2 + (wy - btnY) ** 2) <= 12 * px;
+    }
+
+    function pointInPolygon(x, y, points) {
+      let inside = false;
+      for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
+        const xi = points[i].x,
+          yi = points[i].y,
+          xj = points[j].x,
+          yj = points[j].y;
+        if (
+          yi > y !== yj > y &&
+          x < ((xj - xi) * (y - yi)) / (yj - yi) + xi
+        ) {
+          inside = !inside;
+        }
+      }
+      return inside;
+    }
+
+    function fogPatchAt(wx, wy) {
+      const fog = am().fog;
+      for (let i = fog.length - 1; i >= 0; i--) {
+        if (pointInPolygon(wx, wy, fog[i].points)) return fog[i];
+      }
+      return null;
+    }
+
     // Throttled live streaming of piece drags to the room.
     let lastPieceSend = 0;
     function streamPieceUpdate(piece) {
@@ -1351,6 +2197,7 @@
       lastPieceSend = now;
       netSend({
         op: "piece.update",
+        map: am().id,
         id: piece.id,
         x: piece.x,
         y: piece.y,
@@ -1359,12 +2206,14 @@
       });
     }
 
-    function commitPieceUpdate(pieceId) {
-      const piece = table.pieces.find((p) => p.id === pieceId);
+    function commitPieceUpdate(pieceId, { snap = false } = {}) {
+      const piece = am().pieces.find((p) => p.id === pieceId);
       if (!piece) return;
+      if (snap) maybeSnapPiece(piece);
       // Final position: run through dispatch so it persists and syncs.
       dispatch({
         op: "piece.update",
+        map: am().id,
         id: piece.id,
         x: piece.x,
         y: piece.y,
@@ -1376,11 +2225,37 @@
     let mouseIsDown = false;
 
     canvas.addEventListener("mousedown", (e) => {
+      // Pan: middle button, right button, or space+left.
+      if (e.button === 1 || e.button === 2 || (e.button === 0 && session.spaceHeld)) {
+        const v = view();
+        session.panning = {
+          sx: e.clientX,
+          sy: e.clientY,
+          ox: v.ox,
+          oy: v.oy,
+          scale: v.scale,
+        };
+        updateCursor();
+        e.preventDefault();
+        return;
+      }
+      if (e.button !== 0) return;
       mouseIsDown = true;
+      closePieceEditor();
       handlePointerDown(toWorld(getMousePos(e)));
     });
 
     canvas.addEventListener("mousemove", (e) => {
+      if (session.panning) {
+        cam = {
+          scale: session.panning.scale,
+          ox: session.panning.ox + (e.clientX - session.panning.sx),
+          oy: session.panning.oy + (e.clientY - session.panning.sy),
+        };
+        updateViewResetBtn();
+        render();
+        return;
+      }
       const pos = toWorld(getMousePos(e));
       // Only process drawing if mouse is actually held down
       if (session.isDrawing && !mouseIsDown) {
@@ -1407,12 +2282,13 @@
         }
         const path = session.currentPath;
         session.currentPath = null;
+        const mapId = am().id;
         dispatch(
-          { op: "draw.add", path },
+          { op: "draw.add", map: mapId, path },
           {
             record: {
-              undo: [{ op: "draw.remove", ids: [path.id] }],
-              redo: [{ op: "draw.add", path }],
+              undo: [{ op: "draw.remove", map: mapId, ids: [path.id] }],
+              redo: [{ op: "draw.add", map: mapId, path }],
             },
           },
         );
@@ -1420,32 +2296,110 @@
       if (session.mode === "erase" && session.eraseBatch.length) {
         const removed = session.eraseBatch;
         session.eraseBatch = [];
+        const mapId = am().id;
         // Ops already applied+sent per hit; record one undo entry per stroke.
         undoStack.push({
-          undo: removed.map((path) => ({ op: "draw.add", path })),
-          redo: [{ op: "draw.remove", ids: removed.map((p) => p.id) }],
+          undo: removed.map((path) => ({ op: "draw.add", map: mapId, path })),
+          redo: [
+            { op: "draw.remove", map: mapId, ids: removed.map((p) => p.id) },
+          ],
         });
         if (undoStack.length > UNDO_LIMIT) undoStack.shift();
         redoStack.length = 0;
         updateUndoButtons();
       }
+      if (session.mode === "fog" && session.fogDraft) {
+        const points = session.fogDraft.points;
+        session.fogDraft = null;
+        if (polygonArea(points) > 25) {
+          dispatch({
+            op: "fog.add",
+            map: am().id,
+            patch: { id: uid(), points: simplify(points) },
+          });
+        } else {
+          // A micro-gesture is a click: toggle the patch under it.
+          const patch = fogPatchAt(points[0].x, points[0].y);
+          if (patch) {
+            dispatch({
+              op: "fog.set",
+              map: am().id,
+              id: patch.id,
+              revealed: !patch.revealed,
+            });
+          }
+        }
+      }
+      if (session.mode === "measure" && session.measure) {
+        sendEphemeral({ kind: "ruler", done: true });
+        session.measure = null;
+      }
+      if (session.calibrateStart && session.calibrateEnd) {
+        const w = Math.abs(session.calibrateEnd.x - session.calibrateStart.x);
+        const h = Math.abs(session.calibrateEnd.y - session.calibrateStart.y);
+        const size = Math.round((w + h) / 2);
+        if (size >= 8) {
+          dispatch({ op: "grid.set", map: am().id, on: true, size });
+          syncGridControls();
+          toast(`Grid set to ${size}px squares.`);
+        }
+        session.calibrating = false;
+        fitGridBtn.classList.remove("active");
+      }
+      session.calibrateStart = null;
+      session.calibrateEnd = null;
       session.currentPath = null;
       session.isDrawing = false;
+    }
+
+    function polygonArea(points) {
+      let area = 0;
+      for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
+        area += (points[j].x + points[i].x) * (points[j].y - points[i].y);
+      }
+      return Math.abs(area / 2);
+    }
+
+    /** Keep every Nth point — fog outlines don't need stroke fidelity. */
+    function simplify(points) {
+      if (points.length <= 24) return points;
+      const step = Math.ceil(points.length / 24);
+      const out = points.filter((_, i) => i % step === 0);
+      if (out[out.length - 1] !== points[points.length - 1]) {
+        out.push(points[points.length - 1]);
+      }
+      return out;
     }
 
     function handlePointerUp() {
       mouseIsDown = false;
 
+      if (session.panning) {
+        session.panning = null;
+        updateCursor();
+        return;
+      }
+
       // Piece drop
       if (session.draggingPiece !== null || session.resizingPiece !== null) {
+        const dragged = session.draggingPiece;
         const id = session.draggingPiece ?? session.resizingPiece;
         session.draggingPiece = null;
         session.resizingPiece = null;
-        commitPieceUpdate(id);
+        // Snap pieces that actually MOVED (a plain click must not teleport
+        // the token to the cell center); resizes keep their exact size.
+        commitPieceUpdate(id, { snap: dragged !== null && session.dragMoved });
+        session.dragMoved = false;
         render();
       }
 
-      if (session.isDrawing || session.currentPath) {
+      if (
+        session.isDrawing ||
+        session.currentPath ||
+        session.fogDraft ||
+        session.measure ||
+        session.calibrateStart
+      ) {
         finishDrawing();
         render();
       }
@@ -1468,28 +2422,86 @@
       // Don't drop pieces on mouse leave - keep dragging
     });
 
+    // Double-click: on a piece → editor; on empty canvas → quick ping.
+    canvas.addEventListener("dblclick", (e) => {
+      const pos = toWorld(getMousePos(e));
+      const piece = getPieceAt(pos.x, pos.y);
+      if (piece) {
+        openPieceEditor(piece);
+      } else {
+        sendEphemeral({ kind: "ping", x: pos.x, y: pos.y, pulse: true });
+        showPing(
+          { kind: "ping", x: pos.x, y: pos.y, pulse: true },
+          playerName(),
+          nameColor(playerName()),
+        );
+      }
+    });
+
     function eraseAt(wx, wy) {
       const radius = 20 / view().scale;
-      const hit = table.drawings.filter((path) =>
+      const hit = am().drawings.filter((path) =>
         path.points.some(
           (pt) => Math.sqrt((pt.x - wx) ** 2 + (pt.y - wy) ** 2) < radius,
         ),
       );
       if (!hit.length) return;
       session.eraseBatch.push(...hit);
-      dispatch({ op: "draw.remove", ids: hit.map((p) => p.id) });
+      dispatch({ op: "draw.remove", map: am().id, ids: hit.map((p) => p.id) });
     }
 
     // ============ POINTER HANDLERS (world coords) ============
     function handlePointerDown(pos) {
-      // Check hovered piece for delete button click
+      // Grid calibration intercepts everything while armed.
+      if (session.calibrating) {
+        session.calibrateStart = pos;
+        session.calibrateEnd = pos;
+        session.isDrawing = true;
+        return true;
+      }
+
+      // Fog mode: GM-only patch drawing / reveal toggling.
+      if (session.mode === "fog") {
+        if (!canGm()) return false;
+        const patch = fogPatchAt(pos.x, pos.y);
+        if (patch && session.altHeld) {
+          dispatch({ op: "fog.remove", map: am().id, id: patch.id });
+          return true;
+        }
+        session.isDrawing = true;
+        session.fogDraft = {
+          points: [pos],
+          startPatch: patch ? patch.id : null,
+        };
+        return true;
+      }
+
+      // Measure mode: start a ruler.
+      if (session.mode === "measure") {
+        session.isDrawing = true;
+        session.measure = { x1: pos.x, y1: pos.y, x2: pos.x, y2: pos.y };
+        return true;
+      }
+
+      // Point mode: stream a pointer trail.
+      if (session.mode === "point") {
+        session.isDrawing = true;
+        emitPointer(pos);
+        return true;
+      }
+
+      // Check hovered piece for delete/edit button clicks
       if (session.hoveredPiece !== null) {
-        const hovered = table.pieces.find(
+        const hovered = am().pieces.find(
           (p) => p.id === session.hoveredPiece,
         );
         if (hovered && isOnDeleteButton(pos.x, pos.y, hovered)) {
           session.hoveredPiece = null;
-          dispatch({ op: "piece.remove", id: hovered.id });
+          dispatch({ op: "piece.remove", map: am().id, id: hovered.id });
+          return true;
+        }
+        if (hovered && isOnEditButton(pos.x, pos.y, hovered)) {
+          openPieceEditor(hovered);
           return true;
         }
 
@@ -1509,6 +2521,7 @@
       const clicked = getPieceAt(pos.x, pos.y);
       if (clicked) {
         session.draggingPiece = clicked.id;
+        session.dragMoved = false;
         session.hoveredPiece = clicked.id;
         session.dragOffset = { x: pos.x - clicked.x, y: pos.y - clicked.y };
         raisePiece(clicked);
@@ -1539,22 +2552,59 @@
     }
 
     function raisePiece(piece) {
-      const index = table.pieces.indexOf(piece);
+      const pieces = am().pieces;
+      const index = pieces.indexOf(piece);
       if (index !== -1) {
-        table.pieces.splice(index, 1);
-        table.pieces.push(piece);
+        pieces.splice(index, 1);
+        pieces.push(piece);
       }
     }
 
     function handlePointerMove(pos) {
+      if (session.calibrateStart) {
+        session.calibrateEnd = pos;
+        render();
+        return;
+      }
+
+      if (session.mode === "fog" && session.fogDraft && session.isDrawing) {
+        session.fogDraft.points.push(pos);
+        if (session.fogTool === "box") {
+          // Keep only the anchor and derive the box corners from the cursor.
+          const a = session.fogDraft.points[0];
+          session.fogDraft.points = [
+            a,
+            { x: pos.x, y: a.y },
+            pos,
+            { x: a.x, y: pos.y },
+          ];
+        }
+        render();
+        return;
+      }
+
+      if (session.mode === "measure" && session.measure && session.isDrawing) {
+        session.measure.x2 = pos.x;
+        session.measure.y2 = pos.y;
+        emitRuler();
+        render();
+        return;
+      }
+
+      if (session.mode === "point" && session.isDrawing) {
+        emitPointer(pos);
+        return;
+      }
+
       // Piece dragging
       if (session.draggingPiece !== null) {
-        const piece = table.pieces.find(
+        const piece = am().pieces.find(
           (p) => p.id === session.draggingPiece,
         );
         if (piece) {
           piece.x = pos.x - session.dragOffset.x;
           piece.y = pos.y - session.dragOffset.y;
+          session.dragMoved = true;
           streamPieceUpdate(piece);
           render();
         }
@@ -1563,7 +2613,7 @@
 
       // Piece resizing
       if (session.resizingPiece !== null) {
-        const piece = table.pieces.find(
+        const piece = am().pieces.find(
           (p) => p.id === session.resizingPiece,
         );
         if (piece) {
@@ -1618,10 +2668,44 @@
       }
     }
 
+    // ============ TOUCH (single-pointer actions + two-finger camera) ============
+    function touchDistance(e) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    function touchMidpoint(e) {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left,
+        y: (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top,
+      };
+    }
+
     canvas.addEventListener(
       "touchstart",
       (e) => {
         e.preventDefault();
+        if (e.touches.length === 2) {
+          // Second finger: abandon any in-progress single-finger action and
+          // start the camera gesture (pinch zoom + two-finger pan).
+          session.isDrawing = false;
+          session.currentPath = null;
+          session.fogDraft = null;
+          session.measure = null;
+          session.draggingPiece = null;
+          session.resizingPiece = null;
+          const v = view();
+          session.pinch = {
+            dist: touchDistance(e),
+            mid: touchMidpoint(e),
+            scale: v.scale,
+            ox: v.ox,
+            oy: v.oy,
+          };
+          return;
+        }
         const pos = toWorld(getTouchPos(e));
         // Set hover for touch (since no mousemove before touch)
         const touched = getPieceAt(pos.x, pos.y);
@@ -1629,6 +2713,7 @@
           session.hoveredPiece = touched.id;
           render();
         }
+        mouseIsDown = true;
         handlePointerDown(pos);
       },
       { passive: false },
@@ -1638,6 +2723,25 @@
       "touchmove",
       (e) => {
         e.preventDefault();
+        if (session.pinch && e.touches.length === 2) {
+          const fit = fitView();
+          const dist = touchDistance(e);
+          const mid = touchMidpoint(e);
+          const factor = dist / session.pinch.dist;
+          const scale = Math.min(
+            fit.scale * 8,
+            Math.max(fit.scale, session.pinch.scale * factor),
+          );
+          const k = scale / session.pinch.scale;
+          cam = {
+            scale,
+            ox: mid.x - (session.pinch.mid.x - session.pinch.ox) * k,
+            oy: mid.y - (session.pinch.mid.y - session.pinch.oy) * k,
+          };
+          updateViewResetBtn();
+          render();
+          return;
+        }
         handlePointerMove(toWorld(getTouchPos(e)));
       },
       { passive: false },
@@ -1647,6 +2751,10 @@
       "touchend",
       (e) => {
         e.preventDefault();
+        if (session.pinch) {
+          if (e.touches.length < 2) session.pinch = null;
+          return;
+        }
         handlePointerUp();
       },
       { passive: false },
@@ -1656,6 +2764,7 @@
       "touchcancel",
       (e) => {
         e.preventDefault();
+        session.pinch = null;
         handlePointerUp();
       },
       { passive: false },
@@ -1663,31 +2772,276 @@
 
     window.addEventListener("touchend", handlePointerUp);
 
-    // ============ CLEAR DRAWINGS ============
+    // ============ CLEAR DRAWINGS / FOG ============
     clearBtn.addEventListener("click", () => {
-      if (table.drawings.length === 0) return;
-      const removed = table.drawings.slice();
+      const map = am();
+      if (map.drawings.length === 0) return;
+      if (net.room && !confirm("Clear all drawings on this map for everyone?")) {
+        return;
+      }
+      const removed = map.drawings.slice();
+      const mapId = map.id;
       dispatch(
-        { op: "draw.clear" },
+        { op: "draw.clear", map: mapId },
         {
           record: {
-            undo: removed.map((path) => ({ op: "draw.add", path })),
-            redo: [{ op: "draw.clear" }],
+            undo: removed.map((path) => ({ op: "draw.add", map: mapId, path })),
+            redo: [{ op: "draw.clear", map: mapId }],
           },
         },
       );
     });
 
+    clearFogBtn.addEventListener("click", () => {
+      if (am().fog.length === 0) return;
+      if (!confirm("Remove all fog on this map?")) return;
+      dispatch({ op: "fog.clear", map: am().id });
+    });
+
+    // ============ PRESENCE (pings + rulers over the ephemeral channel) ============
+    const pings = new Map(); // sender name -> ping display state
+    const rulers = new Map(); // sender name -> ruler display state
+    let overlayRaf = null;
+
+    function sendEphemeral(payload) {
+      if (!net.connected || !net.ws) return;
+      const name = playerName();
+      const message = {
+        t: "ephemeral",
+        name,
+        color: nameColor(name),
+        ...payload,
+      };
+      try {
+        for (const frame of encodeFrames(message)) net.ws.send(frame);
+      } catch {
+        // Connection is mid-close; presence is best-effort.
+      }
+    }
+
+    let lastPointerSend = 0;
+    function emitPointer(pos) {
+      showPing(
+        { kind: "ping", x: pos.x, y: pos.y },
+        playerName(),
+        nameColor(playerName()),
+      );
+      const now = performance.now();
+      if (now - lastPointerSend < 50) return;
+      lastPointerSend = now;
+      sendEphemeral({ kind: "ping", x: pos.x, y: pos.y });
+    }
+
+    let lastRulerSend = 0;
+    function emitRuler() {
+      const now = performance.now();
+      if (now - lastRulerSend < 50) return;
+      lastRulerSend = now;
+      sendEphemeral({ kind: "ruler", ...session.measure });
+    }
+
+    function showPing(msg, name, color) {
+      let ping = pings.get(name);
+      if (!ping) {
+        ping = { trail: [], name, color };
+        pings.set(name, ping);
+      }
+      ping.color = color;
+      ping.trail.push({ x: msg.x, y: msg.y, t: performance.now() });
+      if (ping.trail.length > 40) ping.trail.shift();
+      if (msg.pulse) ping.pulse = { x: msg.x, y: msg.y, t: performance.now() };
+      startOverlayLoop();
+    }
+
+    function onEphemeral(msg) {
+      window.__dndLastEphemeral = msg; // test hook (see <dnd-test-multiplayer-04>)
+      if (msg.kind === "ping") {
+        showPing(msg, msg.name || "Player", msg.color || "#e05252");
+      } else if (msg.kind === "ruler") {
+        if (msg.done) {
+          rulers.delete(msg.name || "Player");
+        } else {
+          rulers.set(msg.name || "Player", {
+            ...msg,
+            t: performance.now(),
+          });
+          startOverlayLoop();
+        }
+      }
+    }
+
+    function startOverlayLoop() {
+      if (overlayRaf) return;
+      const loop = () => {
+        const now = performance.now();
+        for (const [name, ping] of pings) {
+          ping.trail = ping.trail.filter((p) => now - p.t < 900);
+          if (ping.pulse && now - ping.pulse.t > 1100) ping.pulse = null;
+          if (!ping.trail.length && !ping.pulse) pings.delete(name);
+        }
+        for (const [name, ruler] of rulers) {
+          if (now - ruler.t > 1800) rulers.delete(name);
+        }
+        render();
+        if (pings.size || rulers.size || session.measure) {
+          overlayRaf = requestAnimationFrame(loop);
+        } else {
+          overlayRaf = null;
+        }
+      };
+      overlayRaf = requestAnimationFrame(loop);
+    }
+
+    function measureLabel(x1, y1, x2, y2) {
+      const grid = am().grid;
+      if (grid.on) {
+        // Chebyshev (D&D 5e RAW): diagonals cost 1 square.
+        const cells =
+          Math.max(Math.abs(x2 - x1), Math.abs(y2 - y1)) / grid.size;
+        const rounded = Math.round(cells * 10) / 10;
+        return `${rounded} sq · ${Math.round(rounded * 5)} ft`;
+      }
+      const px = Math.round(Math.hypot(x2 - x1, y2 - y1));
+      return `${px}px`;
+    }
+
+    function renderPresence(px) {
+      const now = performance.now();
+
+      // Rulers (mine + peers')
+      const allRulers = [...rulers.values()];
+      if (session.measure) {
+        allRulers.push({
+          ...session.measure,
+          name: playerName(),
+          color: nameColor(playerName()),
+        });
+      }
+      for (const ruler of allRulers) {
+        ctx.strokeStyle = ruler.color || "#c9a959";
+        ctx.lineWidth = 2 * px;
+        ctx.setLineDash([8 * px, 5 * px]);
+        ctx.beginPath();
+        ctx.moveTo(ruler.x1, ruler.y1);
+        ctx.lineTo(ruler.x2, ruler.y2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        const label = measureLabel(ruler.x1, ruler.y1, ruler.x2, ruler.y2);
+        drawTag(
+          label + (ruler.name && ruler.name !== playerName() ? ` — ${ruler.name}` : ""),
+          ruler.x2,
+          ruler.y2 - 18 * px,
+          ruler.color || "#c9a959",
+          px,
+        );
+      }
+
+      // Pings
+      for (const ping of pings.values()) {
+        for (const [i, p] of ping.trail.entries()) {
+          const age = (now - p.t) / 900;
+          ctx.globalAlpha = Math.max(0, 1 - age) * 0.8;
+          ctx.fillStyle = ping.color;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, (4 + 4 * (i / ping.trail.length)) * px, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+        if (ping.pulse) {
+          const age = (now - ping.pulse.t) / 1100;
+          ctx.globalAlpha = Math.max(0, 1 - age);
+          ctx.strokeStyle = ping.color;
+          ctx.lineWidth = 3 * px;
+          ctx.beginPath();
+          ctx.arc(ping.pulse.x, ping.pulse.y, (10 + 50 * age) * px, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.globalAlpha = 1;
+        }
+        const last = ping.trail[ping.trail.length - 1] || ping.pulse;
+        if (last) {
+          drawTag(ping.name, last.x, last.y - 16 * px, ping.color, px);
+          drawEdgeArrowIfOffscreen(last, ping.color, px);
+        }
+      }
+    }
+
+    function drawTag(text, wx, wy, color, px) {
+      const size = 11 * px;
+      ctx.font = `600 ${size}px -apple-system, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "bottom";
+      const w = ctx.measureText(text).width;
+      ctx.fillStyle = "rgba(13, 13, 26, 0.8)";
+      ctx.fillRect(wx - w / 2 - 4 * px, wy - size - 4 * px, w + 8 * px, size + 6 * px);
+      ctx.fillStyle = color;
+      ctx.fillText(text, wx, wy);
+    }
+
+    /** When a ping sits outside the viewport, point an arrow toward it. */
+    function drawEdgeArrowIfOffscreen(worldPoint, color, px) {
+      const v = view();
+      const sx = worldPoint.x * v.scale + v.ox;
+      const sy = worldPoint.y * v.scale + v.oy;
+      if (sx >= 0 && sx <= canvas.width && sy >= 0 && sy <= canvas.height) {
+        return;
+      }
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2;
+      const angle = Math.atan2(sy - cy, sx - cx);
+      const margin = 26;
+      const ex = Math.min(canvas.width - margin, Math.max(margin, sx));
+      const ey = Math.min(canvas.height - margin, Math.max(margin, sy));
+      // Draw in screen space
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.translate(ex, ey);
+      ctx.rotate(angle);
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(12, 0);
+      ctx.lineTo(-6, -8);
+      ctx.lineTo(-6, 8);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+      // Restore world transform for the caller
+      const vv = view();
+      ctx.setTransform(vv.scale, 0, 0, vv.scale, vv.ox, vv.oy);
+    }
+
     // ============ MULTIPLAYER (dnd-sync rooms) ============
     const net = {
       ws: null,
       room: null,
+      role: null, // "gm" | "player" | null
+      starter: false, // this client clicked "Start shared table"
       connected: false,
       assembler: null,
       retryDelay: 2000,
       closedByUser: false,
       peers: 0,
     };
+
+    const GM_KEYS = "dndGmKeys"; // { CODE: key } — GM capability per room
+    const LAST_ROOM = "dndLastRoom"; // { code } — for "Rejoin last table"
+
+    function gmKeyFor(code) {
+      try {
+        return JSON.parse(localStorage.getItem(GM_KEYS) || "{}")[code] || null;
+      } catch {
+        return null;
+      }
+    }
+
+    function storeGmKey(code, key) {
+      try {
+        const keys = JSON.parse(localStorage.getItem(GM_KEYS) || "{}");
+        keys[code] = key;
+        localStorage.setItem(GM_KEYS, JSON.stringify(keys));
+      } catch {
+        // Non-fatal: the key also lives in the GM link.
+      }
+    }
 
     function randomRoomCode() {
       const alphabet = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"; // no 0/O/1/I/L
@@ -1701,24 +3055,63 @@
       return match ? match[1].toUpperCase() : null;
     }
 
-    function joinRoom(code) {
-      net.room = code;
-      net.closedByUser = false;
-      net.retryDelay = 2000;
-      history.replaceState(null, "", "#room=" + code);
-      connect();
-      updateTableUI();
+    function gmKeyFromHash() {
+      const match = location.hash.match(/gm=([A-Za-z0-9-]{8,64})/);
+      return match ? match[1] : null;
     }
 
-    function leaveTable() {
+    function updateHash() {
+      if (!net.room) {
+        history.replaceState(null, "", location.pathname + location.search);
+        return;
+      }
+      const gmKey = net.role === "gm" ? gmKeyFor(net.room) : null;
+      history.replaceState(
+        null,
+        "",
+        "#room=" + net.room + (gmKey ? "&gm=" + gmKey : ""),
+      );
+    }
+
+    function joinRoom(code, { starter = false } = {}) {
+      flushSave();
+      net.room = code;
+      net.role = null;
+      net.starter = starter;
+      net.closedByUser = false;
+      net.retryDelay = 2000;
+      const hashKey = gmKeyFromHash();
+      if (hashKey) storeGmKey(code, hashKey);
+      try {
+        localStorage.setItem(LAST_ROOM, JSON.stringify({ code }));
+      } catch {
+        // ignore
+      }
+      updateHash();
+      connect();
+      updateTableUI();
+      updateGmUI();
+    }
+
+    async function leaveTable() {
+      flushSave();
       net.closedByUser = true;
       net.room = null;
+      net.role = null;
+      net.starter = false;
       if (net.ws) net.ws.close();
       net.ws = null;
       net.connected = false;
       net.peers = 0;
-      history.replaceState(null, "", location.pathname + location.search);
+      updateHash();
+      // Back to the solo table — the room never clobbered it.
+      await loadLocal();
+      resetCamera();
+      renderMapList();
+      syncGridControls();
       updateTableUI();
+      updateGmUI();
+      render();
     }
 
     function connect() {
@@ -1732,7 +3125,11 @@
         if (net.ws !== ws) return;
         net.connected = true;
         net.retryDelay = 2000;
-        ws.send(JSON.stringify({ t: "hello" }));
+        const hello = { t: "hello", name: playerName() };
+        if (net.starter) hello.claimGm = true;
+        const key = gmKeyFor(net.room);
+        if (key) hello.gmKey = key;
+        ws.send(JSON.stringify(hello));
         updateTableUI();
       });
 
@@ -1747,9 +3144,16 @@
         if (msg === null) return;
 
         if (msg.t === "snapshot") {
+          net.role = msg.role === "gm" ? "gm" : "player";
+          if (msg.gmKey) storeGmKey(net.room, msg.gmKey);
+          updateHash();
+          updateGmUI();
+          updateTableUI();
           await onSnapshot(msg.state);
         } else if (msg.t === "op" && msg.op) {
           await applyRemote(msg.op);
+        } else if (msg.t === "ephemeral") {
+          onEphemeral(msg);
         } else if (msg.t === "peers") {
           net.peers = msg.n;
           updateTableUI();
@@ -1769,15 +3173,19 @@
 
     async function onSnapshot(remoteState) {
       const remote = normalizeState(remoteState);
-      if (isEmptyState(remote) && !isEmptyState(table)) {
-        // Fresh room, existing local table: the starter seeds the room.
+      if (isEmptyState(remote) && net.starter && !isEmptyState(table)) {
+        // Fresh room, and WE started it: seed it with the local table.
+        // (Joiners-by-link never seed — that would publish their solo prep.)
         netSend({ op: "state.replace", state: table });
+        saveLocal();
         return;
       }
       // Otherwise the room is authoritative.
       table = remote;
+      resetCamera();
       await ensureAssets();
       renderIconList();
+      renderMapList();
       syncGridControls();
       saveLocal();
       render();
@@ -1804,6 +3212,17 @@
           syncHint.textContent =
             "Shared tables need the sync server deployed (see workers/dnd-sync).";
         }
+        let last = null;
+        try {
+          last = JSON.parse(localStorage.getItem(LAST_ROOM) || "null");
+        } catch {
+          // ignore
+        }
+        rejoinTableBtn.classList.toggle("hidden", !last || !SYNC_CONFIGURED);
+        if (last) {
+          rejoinTableBtn.textContent = "Rejoin " + last.code;
+          rejoinTableBtn.onclick = () => joinRoom(last.code);
+        }
         return;
       }
       roomCodeLabel.textContent = net.room;
@@ -1814,11 +3233,13 @@
           " connected" +
           (net.peers <= 1 ? " (share the link!)" : "")
         : "reconnecting…";
+      roleBadge.classList.toggle("hidden", net.role !== "gm");
+      copyGmLinkBtn.classList.toggle("hidden", net.role !== "gm");
     }
 
     startTableBtn.addEventListener("click", () => {
       if (!SYNC_CONFIGURED) return;
-      joinRoom(randomRoomCode());
+      joinRoom(randomRoomCode(), { starter: true });
     });
 
     copyLinkBtn.addEventListener("click", async () => {
@@ -1832,18 +3253,89 @@
       setTimeout(() => (copyLinkBtn.textContent = "Copy invite link"), 1500);
     });
 
+    copyGmLinkBtn.addEventListener("click", async () => {
+      const key = gmKeyFor(net.room);
+      const link =
+        location.origin +
+        location.pathname +
+        "#room=" +
+        net.room +
+        (key ? "&gm=" + key : "");
+      try {
+        await navigator.clipboard.writeText(link);
+        copyGmLinkBtn.textContent = "Copied!";
+      } catch {
+        copyGmLinkBtn.textContent = link;
+      }
+      setTimeout(() => (copyGmLinkBtn.textContent = "Copy GM link"), 1500);
+    });
+
     leaveTableBtn.addEventListener("click", leaveTable);
 
     // ============ PERSISTENCE ============
+    // Solo play persists under STORAGE_KEY. Room state is mirrored under a
+    // per-room cache key so joining a friend's table never clobbers your
+    // own solo table (v1.0 did exactly that — fixed per the v2.0 contract).
     const STORAGE_KEY = "dndTabletopV2";
     const LEGACY_KEY = "dndTabletop"; // pre-multiplayer saves, migrated on load
+    const ROOM_CACHE_PREFIX = "dndRoomCache:";
+    const ROOM_CACHE_KEEP = 3;
+
+    let saveTimer = null;
+
+    function currentSaveKey() {
+      return net.room ? ROOM_CACHE_PREFIX + net.room : STORAGE_KEY;
+    }
 
     function saveLocal() {
+      clearTimeout(saveTimer);
+      // Coalesce: streamed remote drags would otherwise re-serialize a
+      // multi-MB state per frame.
+      saveTimer = setTimeout(doSave, 400);
+    }
+
+    function flushSave() {
+      if (saveTimer) {
+        clearTimeout(saveTimer);
+        doSave();
+      }
+    }
+
+    function doSave() {
+      saveTimer = null;
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(table));
+        localStorage.setItem(currentSaveKey(), JSON.stringify(table));
+        if (net.room) pruneRoomCaches();
       } catch {
         // Quota exceeded (huge maps) — the table still works, it just
         // won't survive a reload. Shared-table state lives server-side.
+        if (!session.quotaWarned) {
+          session.quotaWarned = true;
+          toast(
+            net.room
+              ? "Table too big to cache locally — the shared room still holds it."
+              : "Table too big to save locally — use Export to keep it.",
+          );
+        }
+      }
+    }
+
+    function pruneRoomCaches() {
+      const codes = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith(ROOM_CACHE_PREFIX)) {
+          codes.push(key.slice(ROOM_CACHE_PREFIX.length));
+        }
+      }
+      if (codes.length <= ROOM_CACHE_KEEP) return;
+      // Keep the current room and drop the rest beyond the cap (no
+      // timestamps in the key — evict arbitrary others; they're caches).
+      for (const code of codes) {
+        if (code === net.room) continue;
+        if (codes.length <= ROOM_CACHE_KEEP) break;
+        localStorage.removeItem(ROOM_CACHE_PREFIX + code);
+        codes.splice(codes.indexOf(code), 1);
       }
     }
 
@@ -1855,6 +3347,7 @@
         } else {
           const legacy = localStorage.getItem(LEGACY_KEY);
           if (legacy) table = normalizeState(JSON.parse(legacy));
+          else table = emptyState();
         }
         await ensureAssets();
         renderIconList();
@@ -1864,15 +3357,32 @@
       }
     }
 
+    // ============ TEST HOOK ============
+    // The e2e suite reads table state through this (the localStorage mirror
+    // is debounced and per-room now). Data-only; no behavior rides on it.
+    window.__dndTable = () => JSON.parse(JSON.stringify(table));
+    window.__dndNet = () => ({
+      room: net.room,
+      role: net.role,
+      peers: net.peers,
+      connected: net.connected,
+    });
+    // Raw op sender — the e2e uses it to prove the Worker DROPS GM-gated
+    // ops from player sockets (equivalent to a devtools user; the trust
+    // model in <dnd-feature-roles-09> assumes exactly this adversary).
+    window.__dndSend = (op) => netSend(op);
+
     // ============ INIT ============
     async function init() {
       resizeCanvas();
       await loadLocal();
+      renderMapList();
       syncGridControls();
       updateCursor();
-      updateDrawSettingsVisibility();
+      updateModePanels();
       updateUndoButtons();
       updateTableUI();
+      updateGmUI();
       render();
 
       const hashRoom = roomFromHash();
