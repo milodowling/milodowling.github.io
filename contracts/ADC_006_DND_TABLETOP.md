@@ -126,7 +126,7 @@ Worker, and unit-tested directly. State shape (v3, multi-map):
     pieces:   [{ id, iconId, x, y, w, h,
                  label?, ring?, hidden? }],   // placed tokens (QoL fields opt.)
     drawings: [{ id, points, color, width }],
-    fog:      [{ id, points, revealed }] }]   // fog patches (closed polygons)
+    fog:      [{ id, points, width, reveal }] }]  // fog brush strokes, ordered
 }
 ```
 
@@ -145,8 +145,9 @@ the active map — tolerance for older senders):
 - `piece.add/update/remove` — `add`/`update` accept the QoL fields:
   `label` (string ≤ 40), `ring` (CSS color string ≤ 24 or null), `hidden` (bool)
 - `draw.add/remove/clear` — per map
-- `fog.add` (patch: id + ≥3 world points), `fog.set` (id + revealed bool),
-  `fog.remove` (id), `fog.clear` — per map, GM-gated (see `<dnd-feature-roles-09>`)
+- `fog.add` (stroke: id + ≥2 world points + width + `reveal` bool),
+  `fog.remove` (ids), `fog.clear` — per map, GM-gated
+  (see `<dnd-feature-roles-09>`); strokes composite in array order
 - `map.add` ({ id, name } → empty map), `map.rename`, `map.remove` (last map
   survives: removing the final map is a no-op; removing the active map
   activates another), `map.switch` (sets `activeMap`) — GM-gated
@@ -248,20 +249,22 @@ camera. Single-pointer interactions (draw, drag, resize) are unchanged.
 
 ---
 
-### [Feature: Presence — named ping and shared ruler] <dnd-feature-presence-08>
+### [Feature: Presence — named ping] <dnd-feature-presence-08>
 
 Each participant has a display name (asked once in the Table panel, stored
 in `localStorage.dndPlayerName`) and a deterministic color (hash of name
-over a fixed palette). Two presence gestures, both carried as `ephemeral`
+over a fixed palette). The presence gesture is carried as `ephemeral`
 messages (never state, never history):
 
 - **Ping** — dedicated Point mode (drag streams a fading colored trail with
   a name tag), plus double-click/double-tap in any mode for a one-shot
   ping pulse. Peers render pings above everything; a ping outside the
   current viewport draws an edge arrow pointing toward it.
-- **Ruler** — Measure mode: drag shows a line labeled in grid squares and
-  feet (Chebyshev / D&D 5e diagonals; raw world px when the grid is off),
-  streamed to peers while measuring, gone on release.
+
+A Measure/ruler mode shipped in the first v2.0 build and was CUT at the
+owner preview gate (2026-07-14, "useless for this table"). Clients ignore
+unknown ephemeral `kind`s, so any peer still emitting rulers degrades
+silently.
 
 **Parity:**
 - **Implementation Scope:** presence section of `public/dnd-tabletop/index.html`,
@@ -294,16 +297,20 @@ clear) get a confirm dialog for everyone.
 
 ---
 
-### [Feature: Fog of war] <dnd-feature-fog-10>
+### [Feature: Fog of war — brushed] <dnd-feature-fog-10>
 
-Owlbear-style static "paper fog", GM-only: in Fog mode the GM drags a Box
-(or Brush freehand) patch over a region; clicking a patch toggles
-`revealed`. Players render unrevealed fog as near-opaque ink; the GM sees
-it at ~45% with a dashed outline (revealed patches: faint outline only, so
-they can be re-hidden). Fog is per map, part of shared state
-(`fog.add/set/remove/clear`), and survives undo history untouched (fog is
-not in the drawing undo stack). Walls/vision/dynamic lighting are
-explicitly OUT of species (research + owner sign-off).
+Brush-painted fog, GM-only (redesigned at the owner preview gate
+2026-07-14; the original polygon-patch/click-to-reveal model read as
+"weird" and not opaque enough). Fog mode has two brushes, mirroring
+Draw/Erase: **Cover** paints fog strokes, **Reveal** wipes them
+(`destination-out`). Strokes are fat (≈64 screen px), stored per map as
+`{ id, points, width, reveal }` in world units, and composited in array
+order into an offscreen layer that renders through a small screen-space
+blur so it reads as smoke, not vector shapes. Opacity: ~97% for players,
+~80% for the GM (enough to stage under it). A click is a dab. `Clear fog`
+resets the map's fog. Fog is shared state (`fog.add/remove/clear`) but not
+in the drawing undo stack. Walls/vision/dynamic lighting are explicitly
+OUT of species (research + owner sign-off).
 
 **Parity:**
 - **Implementation Scope:** fog section of `public/dnd-tabletop/index.html`,
@@ -418,10 +425,10 @@ Real browser contexts + a real `wrangler dev` room server: host starts a
 table (and becomes GM), guest joins by link, drawings/undo/icons/renames/
 tokens/grid/backdrop sync in both directions, and a latecomer context
 receives the complete table from the snapshot. v2.0 extends the same suite:
-fog patches sync and render near-opaque for players; a non-GM fog op is
-dropped by the Worker; map add/switch moves every client; piece labels and
-snap positions sync; a ping renders on the peer; an oversized upload
-arrives downscaled. Assertions read each client's table via the
+fog cover strokes sync and render near-opaque for players, and a reveal
+stroke wipes them on the peer; a non-GM fog op is dropped by the Worker;
+map add/switch moves every client; piece labels and snap positions sync; a
+ping reaches the peer; an oversized upload arrives downscaled. Assertions read each client's table via the
 `window.__dndTable` debug hook (the localStorage mirror moved to per-room
 keys in v2.0). — `tests/dnd/multiplayer.e2e.js`
 

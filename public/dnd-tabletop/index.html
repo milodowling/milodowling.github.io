@@ -673,7 +673,6 @@
           <button class="mode-btn active" data-mode="draw">Draw</button>
           <button class="mode-btn" data-mode="erase">Erase</button>
           <button class="mode-btn" data-mode="point">Point</button>
-          <button class="mode-btn" data-mode="measure">Measure</button>
           <button class="mode-btn" data-mode="fog" id="fogModeBtn">Fog</button>
           <button class="mode-btn clear-btn" id="clearDrawings">Clear drawings</button>
         </div>
@@ -698,14 +697,11 @@
         </div>
         <div class="draw-settings hidden" id="fogSettings">
           <div class="draw-thickness">
-            <button class="thickness-btn active" data-fogtool="box">Box</button>
-            <button class="thickness-btn" data-fogtool="brush">Brush</button>
+            <button class="thickness-btn active" data-fogtool="cover">Cover</button>
+            <button class="thickness-btn" data-fogtool="reveal">Reveal</button>
           </div>
-          <div class="draw-hint">Drag to cover · click a patch to reveal/hide · Alt-click removes</div>
+          <div class="draw-hint">Brush fog over the map · Reveal wipes it away · players can't see under it</div>
           <button class="mode-btn clear-btn" id="clearFog">Clear fog</button>
-        </div>
-        <div class="draw-settings hidden" id="measureSettings">
-          <div class="draw-hint">Drag to measure. Squares count D&D-style (diagonals = 1).</div>
         </div>
       </div>
 
@@ -802,14 +798,13 @@
       mode: "draw",
       drawColor: "#cc3333",
       drawWidth: 4, // screen px at draw time; stored per-path in world units
-      fogTool: "box",
+      fogTool: "cover", // "cover" paints fog, "reveal" wipes it
       shiftHeld: false,
       altHeld: false,
       spaceHeld: false,
       isDrawing: false,
       currentPath: null, // world coords (draw mode)
-      fogDraft: null, // { points } world coords (fog mode)
-      measure: null, // { x1, y1, x2, y2 } world coords (measure mode)
+      fogDraft: null, // in-progress fog stroke (fog mode), world coords
       calibrating: false, // "Fit grid" drag in progress-or-armed
       calibrateStart: null,
       eraseBatch: [], // paths removed during one erase stroke (for undo)
@@ -865,7 +860,6 @@
     const addMapBtn = document.getElementById("addMapBtn");
     const drawSettings = document.getElementById("drawSettings");
     const fogSettings = document.getElementById("fogSettings");
-    const measureSettings = document.getElementById("measureSettings");
     const colorSwatches = document.querySelectorAll(".color-swatch");
     const thicknessButtons = document.querySelectorAll(".thickness-btn[data-width]");
     const fogToolButtons = document.querySelectorAll(".thickness-btn[data-fogtool]");
@@ -1155,20 +1149,8 @@
         }
       }
 
-      // Fog of war (players: near-opaque; GM: translucent + outlines)
-      const gm = canGm();
-      for (const patch of map.fog) {
-        if (!patch.revealed) {
-          ctx.fillStyle = gm ? "rgba(13, 13, 26, 0.45)" : "rgba(13, 13, 26, 0.96)";
-          fillPolygon(patch.points);
-          if (gm) strokePolygon(patch.points, "rgba(201, 169, 89, 0.7)", px);
-        } else if (gm && session.mode === "fog") {
-          strokePolygon(patch.points, "rgba(201, 169, 89, 0.3)", px);
-        }
-      }
-      if (session.fogDraft && session.fogDraft.points.length >= 2) {
-        strokePolygon(session.fogDraft.points, "rgba(201, 169, 89, 0.9)", px);
-      }
+      // Fog of war — brushed strokes composited into a soft layer.
+      renderFog(v);
 
       // Grid-calibration draft box
       if (session.calibrateStart && session.calibrateEnd) {
@@ -1186,7 +1168,7 @@
         ctx.setLineDash([]);
       }
 
-      // Presence overlays (pings, rulers) — screen-constant sizing.
+      // Presence overlays (pings) — screen-constant sizing.
       renderPresence(px);
 
       ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -1207,26 +1189,55 @@
       ctx.fillText(text, cx, ty);
     }
 
-    function fillPolygon(points) {
-      if (points.length < 3) return;
-      ctx.beginPath();
-      ctx.moveTo(points[0].x, points[0].y);
-      for (let i = 1; i < points.length; i++) ctx.lineTo(points[i].x, points[i].y);
-      ctx.closePath();
-      ctx.fill();
-    }
+    // Fog strokes render into an offscreen layer (cover = paint, reveal =
+    // destination-out wipe), then composite onto the canvas through a small
+    // screen-space blur so the edges read as fog, not vector shapes. Players
+    // get it near-opaque; the GM gets a lighter pass to stage under it.
+    let fogLayer = null;
 
-    function strokePolygon(points, style, px) {
-      if (points.length < 2) return;
-      ctx.strokeStyle = style;
-      ctx.lineWidth = 1.5 * px;
-      ctx.setLineDash([6 * px, 4 * px]);
-      ctx.beginPath();
-      ctx.moveTo(points[0].x, points[0].y);
-      for (let i = 1; i < points.length; i++) ctx.lineTo(points[i].x, points[i].y);
-      ctx.closePath();
-      ctx.stroke();
-      ctx.setLineDash([]);
+    function renderFog(v) {
+      const map = am();
+      const strokes = session.fogDraft
+        ? [...map.fog, session.fogDraft]
+        : map.fog;
+      if (!strokes.length) return;
+
+      if (!fogLayer) fogLayer = document.createElement("canvas");
+      if (fogLayer.width !== canvas.width || fogLayer.height !== canvas.height) {
+        fogLayer.width = canvas.width;
+        fogLayer.height = canvas.height;
+      }
+      const f = fogLayer.getContext("2d");
+      f.setTransform(1, 0, 0, 1, 0, 0);
+      f.clearRect(0, 0, fogLayer.width, fogLayer.height);
+      f.setTransform(v.scale, 0, 0, v.scale, v.ox, v.oy);
+      f.lineCap = "round";
+      f.lineJoin = "round";
+      for (const s of strokes) {
+        f.globalCompositeOperation = s.reveal ? "destination-out" : "source-over";
+        // One flat tone; the screen-space blur below turns overlapping
+        // strokes into a single soft blanket instead of visible "worms".
+        f.strokeStyle = "#2f2f3d";
+        f.lineWidth = s.width;
+        f.beginPath();
+        f.moveTo(s.points[0].x, s.points[0].y);
+        if (s.points.length === 1) {
+          f.lineTo(s.points[0].x + 0.01, s.points[0].y); // a dab
+        }
+        for (let i = 1; i < s.points.length; i++) {
+          f.lineTo(s.points[i].x, s.points[i].y);
+        }
+        f.stroke();
+      }
+
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.globalAlpha = canGm() ? 0.8 : 0.97;
+      ctx.filter = "blur(3px)";
+      ctx.drawImage(fogLayer, 0, 0);
+      ctx.restore();
+      // Back to world space for the layers above.
+      ctx.setTransform(v.scale, 0, 0, v.scale, v.ox, v.oy);
     }
 
     function strokePath(path) {
@@ -1558,8 +1569,6 @@
     function updateModePanels() {
       drawSettings.style.display = session.mode === "draw" ? "block" : "none";
       fogSettings.style.display = session.mode === "fog" ? "block" : "none";
-      measureSettings.style.display =
-        session.mode === "measure" ? "block" : "none";
     }
 
     function updateCursor() {
@@ -2164,31 +2173,6 @@
       return Math.sqrt((wx - btnX) ** 2 + (wy - btnY) ** 2) <= 12 * px;
     }
 
-    function pointInPolygon(x, y, points) {
-      let inside = false;
-      for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
-        const xi = points[i].x,
-          yi = points[i].y,
-          xj = points[j].x,
-          yj = points[j].y;
-        if (
-          yi > y !== yj > y &&
-          x < ((xj - xi) * (y - yi)) / (yj - yi) + xi
-        ) {
-          inside = !inside;
-        }
-      }
-      return inside;
-    }
-
-    function fogPatchAt(wx, wy) {
-      const fog = am().fog;
-      for (let i = fog.length - 1; i >= 0; i--) {
-        if (pointInPolygon(wx, wy, fog[i].points)) return fog[i];
-      }
-      return null;
-    }
-
     // Throttled live streaming of piece drags to the room.
     let lastPieceSend = 0;
     function streamPieceUpdate(piece) {
@@ -2309,30 +2293,14 @@
         updateUndoButtons();
       }
       if (session.mode === "fog" && session.fogDraft) {
-        const points = session.fogDraft.points;
+        const stroke = session.fogDraft;
         session.fogDraft = null;
-        if (polygonArea(points) > 25) {
-          dispatch({
-            op: "fog.add",
-            map: am().id,
-            patch: { id: uid(), points: simplify(points) },
-          });
-        } else {
-          // A micro-gesture is a click: toggle the patch under it.
-          const patch = fogPatchAt(points[0].x, points[0].y);
-          if (patch) {
-            dispatch({
-              op: "fog.set",
-              map: am().id,
-              id: patch.id,
-              revealed: !patch.revealed,
-            });
-          }
+        if (stroke.points.length === 1) {
+          // A click is a dab; the reducer wants two points.
+          const p = stroke.points[0];
+          stroke.points.push({ x: p.x + 0.01, y: p.y });
         }
-      }
-      if (session.mode === "measure" && session.measure) {
-        sendEphemeral({ kind: "ruler", done: true });
-        session.measure = null;
+        dispatch({ op: "fog.add", map: am().id, stroke });
       }
       if (session.calibrateStart && session.calibrateEnd) {
         const w = Math.abs(session.calibrateEnd.x - session.calibrateStart.x);
@@ -2350,25 +2318,6 @@
       session.calibrateEnd = null;
       session.currentPath = null;
       session.isDrawing = false;
-    }
-
-    function polygonArea(points) {
-      let area = 0;
-      for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
-        area += (points[j].x + points[i].x) * (points[j].y - points[i].y);
-      }
-      return Math.abs(area / 2);
-    }
-
-    /** Keep every Nth point — fog outlines don't need stroke fidelity. */
-    function simplify(points) {
-      if (points.length <= 24) return points;
-      const step = Math.ceil(points.length / 24);
-      const out = points.filter((_, i) => i % step === 0);
-      if (out[out.length - 1] !== points[points.length - 1]) {
-        out.push(points[points.length - 1]);
-      }
-      return out;
     }
 
     function handlePointerUp() {
@@ -2397,7 +2346,6 @@
         session.isDrawing ||
         session.currentPath ||
         session.fogDraft ||
-        session.measure ||
         session.calibrateStart
       ) {
         finishDrawing();
@@ -2460,26 +2408,17 @@
         return true;
       }
 
-      // Fog mode: GM-only patch drawing / reveal toggling.
+      // Fog mode: GM-only brush — cover paints, reveal wipes.
       if (session.mode === "fog") {
         if (!canGm()) return false;
-        const patch = fogPatchAt(pos.x, pos.y);
-        if (patch && session.altHeld) {
-          dispatch({ op: "fog.remove", map: am().id, id: patch.id });
-          return true;
-        }
         session.isDrawing = true;
         session.fogDraft = {
+          id: uid(),
           points: [pos],
-          startPatch: patch ? patch.id : null,
+          width: 96 / view().scale, // chunky brush, constant on screen
+          reveal: session.fogTool === "reveal",
         };
-        return true;
-      }
-
-      // Measure mode: start a ruler.
-      if (session.mode === "measure") {
-        session.isDrawing = true;
-        session.measure = { x1: pos.x, y1: pos.y, x2: pos.x, y2: pos.y };
+        render();
         return true;
       }
 
@@ -2569,24 +2508,6 @@
 
       if (session.mode === "fog" && session.fogDraft && session.isDrawing) {
         session.fogDraft.points.push(pos);
-        if (session.fogTool === "box") {
-          // Keep only the anchor and derive the box corners from the cursor.
-          const a = session.fogDraft.points[0];
-          session.fogDraft.points = [
-            a,
-            { x: pos.x, y: a.y },
-            pos,
-            { x: a.x, y: pos.y },
-          ];
-        }
-        render();
-        return;
-      }
-
-      if (session.mode === "measure" && session.measure && session.isDrawing) {
-        session.measure.x2 = pos.x;
-        session.measure.y2 = pos.y;
-        emitRuler();
         render();
         return;
       }
@@ -2693,7 +2614,6 @@
           session.isDrawing = false;
           session.currentPath = null;
           session.fogDraft = null;
-          session.measure = null;
           session.draggingPiece = null;
           session.resizingPiece = null;
           const v = view();
@@ -2798,9 +2718,8 @@
       dispatch({ op: "fog.clear", map: am().id });
     });
 
-    // ============ PRESENCE (pings + rulers over the ephemeral channel) ============
+    // ============ PRESENCE (pings over the ephemeral channel) ============
     const pings = new Map(); // sender name -> ping display state
-    const rulers = new Map(); // sender name -> ruler display state
     let overlayRaf = null;
 
     function sendEphemeral(payload) {
@@ -2832,14 +2751,6 @@
       sendEphemeral({ kind: "ping", x: pos.x, y: pos.y });
     }
 
-    let lastRulerSend = 0;
-    function emitRuler() {
-      const now = performance.now();
-      if (now - lastRulerSend < 50) return;
-      lastRulerSend = now;
-      sendEphemeral({ kind: "ruler", ...session.measure });
-    }
-
     function showPing(msg, name, color) {
       let ping = pings.get(name);
       if (!ping) {
@@ -2857,17 +2768,8 @@
       window.__dndLastEphemeral = msg; // test hook (see <dnd-test-multiplayer-04>)
       if (msg.kind === "ping") {
         showPing(msg, msg.name || "Player", msg.color || "#e05252");
-      } else if (msg.kind === "ruler") {
-        if (msg.done) {
-          rulers.delete(msg.name || "Player");
-        } else {
-          rulers.set(msg.name || "Player", {
-            ...msg,
-            t: performance.now(),
-          });
-          startOverlayLoop();
-        }
       }
+      // Unknown kinds fall through silently — rollout tolerance.
     }
 
     function startOverlayLoop() {
@@ -2879,11 +2781,8 @@
           if (ping.pulse && now - ping.pulse.t > 1100) ping.pulse = null;
           if (!ping.trail.length && !ping.pulse) pings.delete(name);
         }
-        for (const [name, ruler] of rulers) {
-          if (now - ruler.t > 1800) rulers.delete(name);
-        }
         render();
-        if (pings.size || rulers.size || session.measure) {
+        if (pings.size) {
           overlayRaf = requestAnimationFrame(loop);
         } else {
           overlayRaf = null;
@@ -2892,49 +2791,8 @@
       overlayRaf = requestAnimationFrame(loop);
     }
 
-    function measureLabel(x1, y1, x2, y2) {
-      const grid = am().grid;
-      if (grid.on) {
-        // Chebyshev (D&D 5e RAW): diagonals cost 1 square.
-        const cells =
-          Math.max(Math.abs(x2 - x1), Math.abs(y2 - y1)) / grid.size;
-        const rounded = Math.round(cells * 10) / 10;
-        return `${rounded} sq · ${Math.round(rounded * 5)} ft`;
-      }
-      const px = Math.round(Math.hypot(x2 - x1, y2 - y1));
-      return `${px}px`;
-    }
-
     function renderPresence(px) {
       const now = performance.now();
-
-      // Rulers (mine + peers')
-      const allRulers = [...rulers.values()];
-      if (session.measure) {
-        allRulers.push({
-          ...session.measure,
-          name: playerName(),
-          color: nameColor(playerName()),
-        });
-      }
-      for (const ruler of allRulers) {
-        ctx.strokeStyle = ruler.color || "#c9a959";
-        ctx.lineWidth = 2 * px;
-        ctx.setLineDash([8 * px, 5 * px]);
-        ctx.beginPath();
-        ctx.moveTo(ruler.x1, ruler.y1);
-        ctx.lineTo(ruler.x2, ruler.y2);
-        ctx.stroke();
-        ctx.setLineDash([]);
-        const label = measureLabel(ruler.x1, ruler.y1, ruler.x2, ruler.y2);
-        drawTag(
-          label + (ruler.name && ruler.name !== playerName() ? ` — ${ruler.name}` : ""),
-          ruler.x2,
-          ruler.y2 - 18 * px,
-          ruler.color || "#c9a959",
-          px,
-        );
-      }
 
       // Pings
       for (const ping of pings.values()) {

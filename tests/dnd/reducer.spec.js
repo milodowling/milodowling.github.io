@@ -27,13 +27,13 @@ const PATH = {
   color: "#cc3333",
   width: 4,
 };
-const FOG_PATCH = {
+const FOG_STROKE = {
   id: "f1",
   points: [
     { x: 0, y: 0 },
-    { x: 100, y: 0 },
     { x: 100, y: 100 },
   ],
+  width: 80,
 };
 
 function stateWithIcon() {
@@ -199,30 +199,44 @@ describe("<dnd-test-reducer-02>: table-state reducer", () => {
     expect(activeMapOf(s).drawings).toHaveLength(0);
   });
 
-  it("fog.add / fog.set / fog.remove / fog.clear", () => {
+  it("fog.add / fog.remove / fog.clear (brush strokes)", () => {
     const s = emptyState();
-    applyOp(s, { op: "fog.add", patch: FOG_PATCH });
-    applyOp(s, { op: "fog.add", patch: FOG_PATCH }); // duplicate id — no-op
+    applyOp(s, { op: "fog.add", stroke: FOG_STROKE });
+    applyOp(s, { op: "fog.add", stroke: FOG_STROKE }); // duplicate id — no-op
     const fog = () => activeMapOf(s).fog;
     expect(fog()).toHaveLength(1);
-    expect(fog()[0].revealed).toBe(false);
-    applyOp(s, { op: "fog.set", id: "f1", revealed: true });
-    expect(fog()[0].revealed).toBe(true);
-    applyOp(s, { op: "fog.set", id: "ghost", revealed: true }); // tolerated
-    applyOp(s, { op: "fog.remove", id: "f1" });
-    expect(fog()).toHaveLength(0);
-    applyOp(s, { op: "fog.add", patch: FOG_PATCH });
+    expect(fog()[0].reveal).toBe(false);
+    expect(fog()[0].width).toBe(80);
+    // A reveal stroke is a second array member (composited in order).
+    applyOp(s, {
+      op: "fog.add",
+      stroke: { ...FOG_STROKE, id: "f2", reveal: true },
+    });
+    expect(fog()).toHaveLength(2);
+    expect(fog()[1].reveal).toBe(true);
+    applyOp(s, { op: "fog.remove", ids: ["f1", "ghost"] });
+    expect(fog()).toHaveLength(1);
     applyOp(s, { op: "fog.clear" });
     expect(fog()).toHaveLength(0);
   });
 
-  it("fog.add rejects degenerate patches (<3 points)", () => {
+  it("fog.add rejects degenerate strokes and clamps width", () => {
     const s = emptyState();
     applyOp(s, {
       op: "fog.add",
-      patch: { id: "f2", points: [{ x: 0, y: 0 }, { x: 1, y: 1 }] },
+      stroke: { id: "f2", points: [{ x: 0, y: 0 }], width: 80 },
     });
     expect(activeMapOf(s).fog).toHaveLength(0);
+    applyOp(s, {
+      op: "fog.add",
+      stroke: { ...FOG_STROKE, id: "f3", width: "garbage" },
+    });
+    expect(activeMapOf(s).fog[0].width).toBe(64); // fallback
+    applyOp(s, {
+      op: "fog.add",
+      stroke: { ...FOG_STROKE, id: "f4", width: 1e9 },
+    });
+    expect(activeMapOf(s).fog[1].width).toBe(4096); // clamped
   });
 
   it("map.add / map.rename / map.switch / map.remove", () => {
@@ -335,7 +349,7 @@ describe("<dnd-test-reducer-02>: table-state reducer", () => {
             { id: "p1", iconId: "i1", x: 0, y: 0, w: 10, h: 10, hidden: true },
             { id: "p2", iconId: "gone", x: 0, y: 0, w: 10, h: 10 },
           ],
-          fog: [FOG_PATCH, { id: "bad", points: [] }],
+          fog: [FOG_STROKE, { id: "bad", points: [] }],
         },
         null, // garbage member
       ],

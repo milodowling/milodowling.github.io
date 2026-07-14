@@ -33,7 +33,7 @@ export function emptyMap(id, name) {
     grid: { on: false, size: 64 },
     pieces: [], // placed tokens: { id, iconId, x, y, w, h, label?, ring?, hidden? }
     drawings: [], // { id, points: [{x,y}], color, width } (world coords)
-    fog: [], // { id, points: [{x,y}], revealed } — closed polygons
+    fog: [], // { id, points, width, reveal } — brush strokes, composited in order
   };
 }
 
@@ -172,31 +172,31 @@ export function applyOp(state, op) {
       return state;
 
     case "fog.add":
+      // A fog brush stroke: `reveal: false` paints fog, `reveal: true`
+      // wipes it away. Strokes composite in array order on the clients.
       if (
         map &&
-        op.patch &&
-        op.patch.id &&
-        Array.isArray(op.patch.points) &&
-        op.patch.points.length >= 3 &&
-        !findById(map.fog, op.patch.id)
+        op.stroke &&
+        op.stroke.id &&
+        Array.isArray(op.stroke.points) &&
+        op.stroke.points.length >= 2 &&
+        !findById(map.fog, op.stroke.id)
       ) {
         map.fog.push({
-          id: op.patch.id,
-          points: op.patch.points,
-          revealed: !!op.patch.revealed,
+          id: op.stroke.id,
+          points: op.stroke.points,
+          width: clampNumber(op.stroke.width, 4, 4096, 64),
+          reveal: !!op.stroke.reveal,
         });
       }
       return state;
 
-    case "fog.set": {
-      const patch = map && findById(map.fog, op.id);
-      if (patch) patch.revealed = !!op.revealed;
+    case "fog.remove": {
+      if (!map) return state;
+      const ids = new Set(op.ids || []);
+      map.fog = map.fog.filter((f) => !ids.has(f.id));
       return state;
     }
-
-    case "fog.remove":
-      if (map) map.fog = map.fog.filter((f) => f.id !== op.id);
-      return state;
 
     case "fog.clear":
       if (map) map.fog = [];
@@ -383,8 +383,13 @@ function normalizeMap(raw, icons) {
     }
   }
   for (const f of raw.fog || []) {
-    if (f && f.id && Array.isArray(f.points) && f.points.length >= 3) {
-      map.fog.push({ id: f.id, points: f.points, revealed: !!f.revealed });
+    if (f && f.id && Array.isArray(f.points) && f.points.length >= 2) {
+      map.fog.push({
+        id: f.id,
+        points: f.points,
+        width: clampNumber(f.width, 4, 4096, 64),
+        reveal: !!f.reveal,
+      });
     }
   }
   return map;

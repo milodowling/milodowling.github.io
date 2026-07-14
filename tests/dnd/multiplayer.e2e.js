@@ -223,14 +223,14 @@ test.describe("<dnd-test-multiplayer-04>: clients share a live table", () => {
       .toBe(2560);
     expect((await activeMapOf(pageB)).backdrop.h).toBe(1600);
 
-    // --- host fogs a region; guest sees it near-opaque ---
-    // (<dnd-feature-fog-10>) Box drag in world ~(200,200)→(900,900).
+    // --- host brushes fog; guest sees it near-opaque ---
+    // (<dnd-feature-fog-10>) Cover stroke through world (300,500)→(900,500).
     await pageA.locator(".mode-btn[data-mode='fog']").click();
-    const fogFrom = await toScreen(pageA, 200, 200);
-    const fogTo = await toScreen(pageA, 900, 900);
+    const fogFrom = await toScreen(pageA, 300, 500);
+    const fogTo = await toScreen(pageA, 900, 500);
     await pageA.mouse.move(fogFrom.x, fogFrom.y);
     await pageA.mouse.down();
-    await pageA.mouse.move(fogTo.x, fogTo.y, { steps: 5 });
+    await pageA.mouse.move(fogTo.x, fogTo.y, { steps: 8 });
     await pageA.mouse.up();
 
     await expect
@@ -242,36 +242,43 @@ test.describe("<dnd-test-multiplayer-04>: clients share a live table", () => {
       })
       .toBe(1);
 
-    // Pixel proof: the fog center is near-black on the PLAYER's canvas
-    // (the backdrop there is a light tan, so dark == fog rendered opaque).
-    const fogPixelDark = await pageB.evaluate(() => {
-      const t = window.__dndTable();
-      const map = t.maps.find((m) => m.id === t.activeMap);
-      const wsz = { w: map.backdrop.w, h: map.backdrop.h };
-      const canvas = document.getElementById("mainCanvas");
-      const scale = Math.min(canvas.width / wsz.w, canvas.height / wsz.h);
-      const ox = (canvas.width - wsz.w * scale) / 2;
-      const oy = (canvas.height - wsz.h * scale) / 2;
-      const x = Math.round(550 * scale + ox);
-      const y = Math.round(550 * scale + oy);
-      const d = canvas.getContext("2d").getImageData(x, y, 1, 1).data;
-      return d[0] < 60 && d[1] < 60 && d[2] < 60;
-    });
-    expect(fogPixelDark).toBe(true);
+    // Pixel proof at the stroke midpoint on the PLAYER's canvas: the light
+    // tan backdrop must be buried under near-opaque fog.
+    const fogPixel = (page) =>
+      page.evaluate(() => {
+        const t = window.__dndTable();
+        const map = t.maps.find((m) => m.id === t.activeMap);
+        const wsz = { w: map.backdrop.w, h: map.backdrop.h };
+        const canvas = document.getElementById("mainCanvas");
+        const scale = Math.min(canvas.width / wsz.w, canvas.height / wsz.h);
+        const ox = (canvas.width - wsz.w * scale) / 2;
+        const oy = (canvas.height - wsz.h * scale) / 2;
+        const x = Math.round(600 * scale + ox);
+        const y = Math.round(500 * scale + oy);
+        return [...canvas.getContext("2d").getImageData(x, y, 1, 1).data];
+      });
+    const fogged = await fogPixel(pageB);
+    expect(fogged[0]).toBeLessThan(80); // tan (216,203,168) buried in smoke
 
     // --- the Worker DROPS GM-gated ops from the player socket ---
     await pageB.evaluate(() => window.__dndSend({ op: "fog.clear" }));
     await pageA.waitForTimeout(1500);
     expect((await activeMapOf(pageA)).fog).toHaveLength(1);
 
-    // --- GM reveals the patch with a click; guest fog lifts ---
-    const fogCenter = await toScreen(pageA, 550, 550);
-    await pageA.mouse.click(fogCenter.x, fogCenter.y);
+    // --- GM wipes with the Reveal brush; the guest's map comes back ---
+    await pageA.locator(".thickness-btn[data-fogtool='reveal']").click();
+    await pageA.mouse.move(fogFrom.x, fogFrom.y);
+    await pageA.mouse.down();
+    await pageA.mouse.move(fogTo.x, fogTo.y, { steps: 8 });
+    await pageA.mouse.up();
     await expect
-      .poll(async () => (await activeMapOf(pageB))?.fog?.[0]?.revealed, {
+      .poll(async () => (await activeMapOf(pageB))?.fog?.length ?? 0, {
         timeout: 10_000,
       })
-      .toBe(true);
+      .toBe(2);
+    await expect
+      .poll(async () => (await fogPixel(pageB))[0], { timeout: 10_000 })
+      .toBeGreaterThan(140); // the tan backdrop shows through again
     await pageA.locator(".mode-btn[data-mode='draw']").click();
 
     // --- token label via the piece editor syncs ---
@@ -381,7 +388,7 @@ test.describe("<dnd-test-multiplayer-04>: clients share a live table", () => {
         maps: 2,
         pieces: 1,
         label: "Bloodied",
-        fog: 1,
+        fog: 2,
         backdrop: true,
         grid: true,
       });
